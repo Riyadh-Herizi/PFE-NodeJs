@@ -4,12 +4,22 @@ const bcrypt = require("bcrypt");
 
 
 var ControllerFunctions = {
-
+    getUserInfo: async (req, res) => {
+        try {
+          
+            const user = await Users.findOne({where : {id : req.user.id}})
+            res.status(200).json(user)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     addProf: async (req, res) => {
         try {
             const body = req.body;
             if (!(body.username && body.password && body.type && body.firstname && body.lastname && body.email)) {
-                return res.status(400).send({ error: "Data not formatted properly" });
+                return res.status(450).send({ error: "Data not formatted properly" });
             }
             const existEmail = await Users.findOne({ where : {email: body.email}  })
             const existUsername = await Users.findOne({ where : {username: body.username} })
@@ -31,6 +41,16 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    getProfs: async (req, res) => {
+        try {
+            const profs = await Users.findAll({where : {role : 1}})
+            res.status(200).json(profs)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     getYears: async (req, res) => {
         try {
             const years = await Years.findAll()
@@ -45,7 +65,7 @@ var ControllerFunctions = {
         try {
             const body = req.body;
             if (!(body.year)) {
-                return res.status(400).send({ error: "Data not formatted properly" });
+                return res.status(450).send({ error: "Data not formatted properly" });
             }
             const semesters = await Semesters.findAll({where : {yearId : body.year}})
             res.status(200).json(semesters)

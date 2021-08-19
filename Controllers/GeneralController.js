@@ -7,7 +7,7 @@ var ControllerFunctions = {
         try {
             const body = req.body;
             if (!(body.username && body.password)) {
-                return res.status(400).send({ error: "Data not formatted properly" });
+                return res.status(450).send({ error: "Data not formatted properly" });
             }
             const user = await Users.findOne({ where: { username: body.username } })
             if (user) {
