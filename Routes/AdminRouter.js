@@ -4,24 +4,30 @@ const router = express.Router();
 var jwt = require('jsonwebtoken')
 
 function isAdmin(req, res, next) {
-    const body = req.body;
-    if(!body.token) {
-        return  res.status(401).send({error : "No token found"});
-    }
-    var token = body.token
-    jwt.verify(token, process.env.TOKEN , (err, decode) => {
+    const authHeader = req.headers.authorization
+    if(authHeader) {
+        const token = authHeader.split(" ")[1]
+        console.log("Token : "+token)
+        jwt.verify(token, process.env.TOKEN , (err, user) => {
         if (err) {
-            res.status(401).send();
+            res.status(403).send({error : "Token expired"})
         }
         else {
-            console.log(decode.user)
-            if (decode.user.role === 0) { 
-                req.user = decode.user
+          
+            if (user.role === 0) { 
+                req.user = user
                 next();
              }
           
         }
     })
+    } else {
+        console.log("No token ")
+        res.status(401).send({error : "Not logged in"})
+    }
+   
+  
+    
 }
 var AdminController = require("../Controllers/AdminController")
 
@@ -30,5 +36,5 @@ router.post('/addprof', isAdmin , AdminController.addProf)
 router.post('/getyears', isAdmin , AdminController.getYears)
 router.post('/getsemesters', isAdmin , AdminController.getSemesters)
 router.post('/getprofs', isAdmin , AdminController.getProfs)
-
+router.post('/logout', isAdmin , AdminController.logout)
 module.exports = router;

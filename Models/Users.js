@@ -14,5 +14,6 @@ module.exports = (sequelize, type) => {
         password : type.STRING,
         role: type.INTEGER,
         type : type.STRING,
+        refreshtoken : type.TEXT
     })
 };

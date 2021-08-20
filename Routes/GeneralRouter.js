@@ -6,5 +6,5 @@ const router = express.Router();
 var GeneralController = require("../Controllers/GeneralController")
 
 router.post('/login', GeneralController.login)
-
+router.post('/refresh', GeneralController.refresh)
 module.exports = router;

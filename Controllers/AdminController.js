@@ -1,4 +1,4 @@
-const { Users ,Years, Semesters } = require("../Sequelize");
+const { Users, Years, Semesters } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 
 
@@ -6,8 +6,8 @@ const bcrypt = require("bcrypt");
 var ControllerFunctions = {
     getUserInfo: async (req, res) => {
         try {
-          
-            const user = await Users.findOne({where : {id : req.user.id}})
+
+            const user = await Users.findOne({ where: { id: req.user.id } })
             res.status(200).json(user)
         }
         catch (err) {
@@ -21,8 +21,8 @@ var ControllerFunctions = {
             if (!(body.username && body.password && body.type && body.firstname && body.lastname && body.email)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const existEmail = await Users.findOne({ where : {email: body.email}  })
-            const existUsername = await Users.findOne({ where : {username: body.username} })
+            const existEmail = await Users.findOne({ where: { email: body.email } })
+            const existUsername = await Users.findOne({ where: { username: body.username } })
             if (existEmail || existUsername) {
                 if (existUsername)
                     res.status(400).send({ error: "Username exist" });
@@ -43,7 +43,7 @@ var ControllerFunctions = {
     },
     getProfs: async (req, res) => {
         try {
-            const profs = await Users.findAll({where : {role : 1}})
+            const profs = await Users.findAll({ where: { role: 1 } })
             res.status(200).json(profs)
         }
         catch (err) {
@@ -67,7 +67,7 @@ var ControllerFunctions = {
             if (!(body.year)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const semesters = await Semesters.findAll({where : {yearId : body.year}})
+            const semesters = await Semesters.findAll({ where: { yearId: body.year } })
             res.status(200).json(semesters)
         }
         catch (err) {
@@ -75,5 +75,18 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    logout: async (req, res) => {
+        const body = req.body;
+        if (!body.refreshToken) {
+            return res.status(401).send({ error: "Not authenticated" })
+        }
+        const user = await Users.findOne({ where: { refreshtoken: body.refreshToken } })
+        if (!user) {
+            return res.status(403).send({ error: "Invalid refresh token" })
+        }
+        user.refreshtoken = "";
+        await user.save()
+        res.status(200).send({ message: "Logged out" })
+    }
 }
 module.exports = ControllerFunctions;
