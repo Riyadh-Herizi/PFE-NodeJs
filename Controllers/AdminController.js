@@ -54,7 +54,7 @@ var ControllerFunctions = {
                     res.status(400).send({ module: "Module exist" });      
             }
             else {
-                await Modules.create({ name: body.name,  complex: body.complex , examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
+                await Modules.create({ name: body.name,  coefficient: body.coefficient , examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
                 res.status(200).send()
             }
         }
@@ -67,6 +67,16 @@ var ControllerFunctions = {
         try {
             const profs = await Users.findAll({ where: { role: 1 } })
             res.status(200).json(profs)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getModules: async (req, res) => {
+        try {
+            const modules = await Modules.findAll({ where: { semesterId: req.body.semester } })
+            res.status(200).json(modules)
         }
         catch (err) {
             console.log(err)

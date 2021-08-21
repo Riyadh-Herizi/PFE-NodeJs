@@ -7,7 +7,7 @@ module.exports = (sequelize, type) => {
             autoIncrement: true
         },        
         name :type.STRING,
-        complex : {
+        coefficient : {
             type : type.INTEGER,
             defaultValue: 0
         },
