@@ -33,6 +33,7 @@ var AdminController = require("../Controllers/AdminController")
 
 router.post('/getuser', isAdmin , AdminController.getUserInfo)
 router.post('/addprof', isAdmin , AdminController.addProf)
+router.post('/addmodule', isAdmin , AdminController.addModule)
 router.post('/getyears', isAdmin , AdminController.getYears)
 router.post('/getsemesters', isAdmin , AdminController.getSemesters)
 router.post('/getprofs', isAdmin , AdminController.getProfs)
