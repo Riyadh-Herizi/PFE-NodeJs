@@ -18,13 +18,28 @@ const SemestersModel = require('./Models/Semesters');
 const Semesters = SemestersModel(sequelize, Sequelize);
 const ModulesModel = require('./Models/Modules');
 const Modules = ModulesModel(sequelize, Sequelize);
-
+const CoursModel = require('./Models/Cours');
+const Cours = CoursModel(sequelize, Sequelize);
+const RequirementsModel = require('./Models/Requirements');
+const Requirements = RequirementsModel(sequelize, Sequelize);
+const ResponsablesModel = require('./Models/Responsables');
+const Responsables = ResponsablesModel(sequelize, Sequelize);
 
 // DEFINING RELATIONS
 Years.hasMany(Semesters)
 Semesters.belongsTo(Years)
 Semesters.hasMany(Modules)
 Modules.belongsTo(Semesters)
+Cours.belongsTo(Requirements)
+Requirements.hasMany(Cours)
+Cours.hasMany(Responsables)
+Responsables.belongsTo(Cours)
+Users.hasMany(Responsables)
+Responsables.belongsTo(Users)
+
+Modules.hasMany(Cours)
+Cours.belongsTo(Modules)
+
 
 
 sequelize.sync({ force: false })
@@ -70,4 +85,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users , Years ,Semesters , Modules }
+module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables}

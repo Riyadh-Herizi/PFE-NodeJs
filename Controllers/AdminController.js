@@ -1,4 +1,4 @@
-const { Users, Years, Semesters ,Modules} = require("../Sequelize");
+const { Users, Years, Semesters ,Modules, Cours, Requirements} = require("../Sequelize");
 const bcrypt = require("bcrypt");
 
 
@@ -63,6 +63,61 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    addCour: async (req, res) => {
+        try {
+            const body = req.body.cour;
+
+            if (!body.name) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const courseExist = await Cours.findOne({ where: { name: body.name } })
+            if ( courseExist ) {
+                    res.status(400).send({ cour: "Cour exist" });      
+            }
+            else {
+                await Cours.create({ name: body.name , hour: body.hour, min: body.min, moduleId: body.module ,requirementId: body.requirementId  })
+                res.status(200).send()
+            }
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    addRequirement: async (req, res) => {
+        try {
+            const body = req.body.requirement;
+
+            if (!body.name) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const requirementExist = await Requirements.findOne({ where: { name: body.name } })
+            if ( requirementExist ) {
+                    res.status(400).send({ requirement: "Requirement exist" });      
+            }
+            else {
+                await Requirements.create({ name: body.name , nombre: body.nombre})
+                res.status(200).send()
+            }
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getRequirement: async (req, res) => {
+        try {
+            const requirements = await Requirements.findAll({})
+            res.status(200).json(requirements)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    
     getProfs: async (req, res) => {
         try {
             const profs = await Users.findAll({ where: { role: 1 } })
@@ -77,6 +132,16 @@ var ControllerFunctions = {
         try {
             const modules = await Modules.findAll({ where: { semesterId: req.body.semester } })
             res.status(200).json(modules)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getCours: async (req, res) => {
+        try {
+            const cours = await Cours.findAll({ where: { moduleId: req.body.module } })
+            res.status(200).json(cours)
         }
         catch (err) {
             console.log(err)
