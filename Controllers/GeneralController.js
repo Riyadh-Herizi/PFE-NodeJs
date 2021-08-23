@@ -37,11 +37,11 @@ var ControllerFunctions = {
                     res.status(200).json({ accessToken: token, refreshToken: refreshToken,  role: user.role, firstname: user.firstname, lastname: user.lastname, id: user.id, username: user.username, type: user.type });
                 } 
                 else {
-                    res.status(400).json({ error: "Invalid Password" });
+                    res.status(400).json({ error: "Nom d'utilisateur / Mot de passe érronée" });
                 }
             }
             else {
-                res.status(400).json({ error: "User does not exist" })
+                res.status(400).json({ error: "Nom d'utilisateur / Mot de passe érronée" })
             }
         }
         catch (err) {

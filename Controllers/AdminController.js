@@ -15,9 +15,9 @@ var ControllerFunctions = {
             const existUsername = await Users.findOne({ where: { username: body.username } })
             if (existEmail || existUsername) {
                 if (existUsername)
-                    res.status(400).send({ username: "Username exist" });
+                    res.status(400).send({ error: "Nom d'utilisateur déja existé" });
                 else
-                    res.status(400).send({ email: "Email exist" });
+                    res.status(400).send({ error: "Email  déja existé" });
 
             }
             else {
