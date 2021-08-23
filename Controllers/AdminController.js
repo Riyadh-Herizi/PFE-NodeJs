@@ -172,10 +172,10 @@ var ControllerFunctions = {
     getSemesters: async (req, res) => {
         try {
             const body = req.body;
-            if (!(body.year)) {
+            if (!(body.yearid)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const semesters = await Semesters.findAll({ where: { yearId: body.year } })
+            const semesters = await Semesters.findAll({ where: { yearId: body.yearid } })
             res.status(200).json(semesters)
         }
         catch (err) {
