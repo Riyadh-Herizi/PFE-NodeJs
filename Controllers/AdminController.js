@@ -1,6 +1,6 @@
 const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables } = require("../Sequelize");
 const bcrypt = require("bcrypt");
-
+const { Op } = require("sequelize");
 
 var ControllerFunctions = {
 
@@ -80,25 +80,59 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    getProfsResponsable: async (req, res) => {
+        try {
+            const body = req.body;
+            const type = body.type;
+            
+            var profs = [];
+            if (type === 0) {
+                const result = await Responsables.findAll({ where: { courId: req.body.targetId }, attributes: ['userId'] })
+                var ids = [];
+                result.map((element) => {
+                    ids.push(element.userId)
+                })
+                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids } , role : 1 } })
+            }
+            else if (type == 1) {
+                const result = await ResponsablesTDP.findAll({ where: { tdpId: req.body.targetId }, attributes: ['userId'] })
+                var ids = [];
+                result.map((element) => {
+                    ids.push(element.userId)
+                })
+                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids } , role : 1 } })
+            }
+
+            res.status(200).json(profs)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     getResponsables: async (req, res) => {
         try {
             var responsables = [];
             const body = req.body;
             const type = req.body.type;
             if (type === 0) {
-                 responsables = await Users.findAll( { include: {
-                    model: Responsables,
-                    required: true,
-                     where: { courId: body.targetId }
-                } }    )
+                responsables = await Users.findAll({
+                    include: {
+                        model: Responsables,
+                        required: true,
+                        where: { courId: body.targetId }
+                    }
+                })
             }
             else if (type === 1) {
-                responsables = await Users.findAll( { include: {
-                    model: ResponsablesTDP,
-                    required: true,
-                     where: { tdpId: body.targetId }
-                } }    )
-                 
+                responsables = await Users.findAll({
+                    include: {
+                        model: ResponsablesTDP,
+                        required: true,
+                        where: { tdpId: body.targetId }
+                    }
+                })
+
             }
             res.status(200).json(responsables)
         }
@@ -122,7 +156,7 @@ var ControllerFunctions = {
 
             }
             else if (type === 1) {
-                const exist_ = await  ResponsablesTDP.findOne({ where: { userId: body.userId, tdpId: body.targetId } })
+                const exist_ = await ResponsablesTDP.findOne({ where: { userId: body.userId, tdpId: body.targetId } })
                 if (exist_) {
                     return res.status(400).json({ error: "Ce prof est déja un responsable " })
                 }

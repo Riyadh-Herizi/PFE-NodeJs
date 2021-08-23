@@ -27,6 +27,7 @@ function isAdmin(req, res, next) {
 
 }
 var AdminController = require("../Controllers/AdminController")
+router.post('/getproflist', isAdmin , AdminController.getProfsResponsable)
 router.post('/getresponsables', isAdmin , AdminController.getResponsables)
 router.post('/addresponsable', isAdmin , AdminController.addResponsable)
 router.post('/addprof', isAdmin , AdminController.addProf)
