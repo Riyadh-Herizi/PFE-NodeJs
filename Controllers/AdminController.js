@@ -1,21 +1,12 @@
-const { Users, Years, Semesters ,Modules, Cours, Requirements} = require("../Sequelize");
+const { Users, Years, Semesters, Modules, Cours, Requirements ,TDP , ResponsablesTDP} = require("../Sequelize");
 const bcrypt = require("bcrypt");
 
 
 var ControllerFunctions = {
-    getUserInfo: async (req, res) => {
-        try {
-            const user = await Users.findOne({ where: { id: req.user.id } })
-            res.status(200).json(user)
-        }
-        catch (err) {
-            console.log(err)
-            res.status(400).json({ error: "Ops , server down" })
-        }
-    },
+   
     addProf: async (req, res) => {
         try {
-            
+
             const body = req.body.user;
             if (!(body.username && body.password && body.type && body.firstname && body.lastname && body.email)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
@@ -27,7 +18,7 @@ var ControllerFunctions = {
                     res.status(400).send({ username: "Username exist" });
                 else
                     res.status(400).send({ email: "Email exist" });
-                    
+
             }
             else {
                 const random = await bcrypt.genSalt(10);
@@ -44,17 +35,17 @@ var ControllerFunctions = {
     addModule: async (req, res) => {
         try {
             const body = req.body.module;
-         
+
             if (!body.name) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
             const moduleExist = await Modules.findOne({ where: { name: body.name } })
-            
-            if ( moduleExist ) {
-                    res.status(400).send({ module: "Module exist" });      
+
+            if (moduleExist) {
+                res.status(400).send({ module: "Module exist" });
             }
             else {
-                await Modules.create({ name: body.name,  coefficient: body.coefficient , examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
+                await Modules.create({ name: body.name, coefficient: body.coefficient, examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
                 res.status(200).send()
             }
         }
@@ -63,21 +54,25 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
-    addCour: async (req, res) => {
+    add: async (req, res) => {
         try {
             const body = req.body.cour;
-
+            const type = body.name;
             if (!body.name) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const courseExist = await Cours.findOne({ where: { name: body.name } })
-            if ( courseExist ) {
-                    res.status(400).send({ cour: "Cour exist" });      
+            const module_ = await Modules.findOne({ where: { id: body.module } })
+            if (type === "Cours") {
+                await Cours.create({ name: "Cours - " + module_.name, hour: body.hour, min: body.min, moduleId: module_.id, requirementId: body.requirementId })
             }
-            else {
-                await Cours.create({ name: body.name , hour: body.hour, min: body.min, moduleId: body.module ,requirementId: body.requirementId  })
-                res.status(200).send()
+            else if (type === "TP") {
+                await TDP.create({ name: "TP - " + module_.name , hour: 2, min: 0, moduleId:  module_.id, requirementId: body.requirementId })
             }
+            else if (type === "TD") {
+                await TDP.create({ name: "TD - " + module_.name , hour: 2, min: 0, moduleId:  module_.id, requirementId: body.requirementId})
+            }
+            
+            res.status(200).send()
 
         }
         catch (err) {
@@ -93,11 +88,11 @@ var ControllerFunctions = {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
             const requirementExist = await Requirements.findOne({ where: { name: body.name } })
-            if ( requirementExist ) {
-                    res.status(400).send({ requirement: "Requirement exist" });      
+            if (requirementExist) {
+                res.status(400).send({ requirement: "Requirement exist" });
             }
             else {
-                await Requirements.create({ name: body.name , nombre: body.nombre})
+                await Requirements.create({ name: body.name, nombre: body.nombre })
                 res.status(200).send()
             }
 
@@ -117,7 +112,7 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
-    
+
     getProfs: async (req, res) => {
         try {
             const profs = await Users.findAll({ where: { role: 1 } })
@@ -138,9 +133,25 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    getTDP: async (req, res) => {
+        try {
+            const tdps = await TDP.findAll({ where: { moduleId: req.body.module },include: {
+                model: Requirements,
+                required: true
+              } })
+            res.status(200).json(tdps)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     getCours: async (req, res) => {
         try {
-            const cours = await Cours.findAll({ where: { moduleId: req.body.module } })
+            const cours = await Cours.findAll({ where: { moduleId: req.body.module } ,include: {
+                model: Requirements,
+                required: true
+              }})
             res.status(200).json(cours)
         }
         catch (err) {

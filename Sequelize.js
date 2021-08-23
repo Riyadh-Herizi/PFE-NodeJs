@@ -24,7 +24,10 @@ const RequirementsModel = require('./Models/Requirements');
 const Requirements = RequirementsModel(sequelize, Sequelize);
 const ResponsablesModel = require('./Models/Responsables');
 const Responsables = ResponsablesModel(sequelize, Sequelize);
-
+const ResponsablesTDPModel = require('./Models/ResponsableTDP');
+const ResponsablesTDP = ResponsablesTDPModel(sequelize, Sequelize);
+const TDPModel = require('./Models/TDP');
+const TDP = TDPModel(sequelize, Sequelize);
 // DEFINING RELATIONS
 Years.hasMany(Semesters)
 Semesters.belongsTo(Years)
@@ -32,14 +35,20 @@ Semesters.hasMany(Modules)
 Modules.belongsTo(Semesters)
 Cours.belongsTo(Requirements)
 Requirements.hasMany(Cours)
+TDP.belongsTo(Requirements)
+Requirements.hasMany(TDP)
 Cours.hasMany(Responsables)
 Responsables.belongsTo(Cours)
 Users.hasMany(Responsables)
 Responsables.belongsTo(Users)
-
+TDP.hasMany(ResponsablesTDP)
+ResponsablesTDP.belongsTo(TDP)
+Users.hasMany(ResponsablesTDP)
+ResponsablesTDP.belongsTo(Users)
 Modules.hasMany(Cours)
 Cours.belongsTo(Modules)
-
+Modules.hasMany(TDP)
+TDP.belongsTo(Modules)
 
 
 sequelize.sync({ force: false })
@@ -53,6 +62,7 @@ sequelize.sync({ force: false })
                 const random = await bcrypt.genSalt(10);
                 const Hashedpassword = await bcrypt.hash("12345678", random);
                 await Users.create({ email: "d.amarbensaber@esi-sba.dz", firstname: "Dr.Djamel", lastname: "Amar Ben Saber", role: 0, username: "d.bensaber", password: Hashedpassword, type: "NO" })
+                await Users.create({ email: "n.mahammed@esi-sba.dz", firstname: "Nadir", lastname: "Mahammed", role: 1, username: "n.mahammed", password: Hashedpassword, type: "MCA" })
             }
             const years = await Years.findAll({})
             if (!years.length) {
@@ -77,6 +87,17 @@ sequelize.sync({ force: false })
                 const year7 = await Years.create({ name: "3eme cycle supérieur - ISI" , email :"etudiant5.isi@esi-sba.dz"})
                 await Semesters.create({ name: "Semestre 1", yearId: year7.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year7.id })
+                const requirement = await Requirements.create({ name: "Salle TD" , nombre : 15 })
+                const requirement2 = await Requirements.create({ name: "Amphi" , nombre : 8 })
+                const requirement3 = await Requirements.create({ name: "Salle TP" , nombre : 10 })
+                const module_ = await Modules.create({ name: "Anaylse 1",coefficient : 5, examenH : 2 , examenMin : 30 , semesterId: 1  })
+                await Cours.create({ name: "Cours - Anaylse 1" , hour: 2, min: 0, moduleId: module_.id ,requirementId: requirement2.id  })
+                await TDP.create({ name: "TD - Anaylse 1" , hour: 2, min: 0, moduleId: module_.id ,requirementId: requirement.id  })
+                const module2_ = await Modules.create({ name: "Algorithmique 1" ,coefficient : 5, examenH : 2 , examenMin : 30 , semesterId: 1 })
+                await Cours.create({ name: "Cours - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement2.id  })
+                await TDP.create({ name: "TD - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement.id  })
+                await TDP.create({ name: "TP - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement3.id  })
+
             }
 
         } catch (error) {
@@ -85,4 +106,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables}
+module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables ,TDP, ResponsablesTDP}

@@ -9,7 +9,16 @@ const jwt = require("jsonwebtoken");
     return jwt.sign({ role: user.role, firstname: user.firstname, lastname: user.lastname, id: user.id, username: user.username, type: user.type }, process.env.REFRESHTOKEN);
  }
 var ControllerFunctions = {
-
+    getUserInfo: async (req, res) => {
+        try {
+            const user = await Users.findOne({ where: { id: req.user.id } })
+            res.status(200).json(user)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     login: async (req, res) => {
         try {
             console.log(req.body)
