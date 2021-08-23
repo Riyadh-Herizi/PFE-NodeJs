@@ -1,9 +1,9 @@
-const { Users, Years, Semesters, Modules, Cours, Requirements ,TDP , ResponsablesTDP} = require("../Sequelize");
+const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 
 
 var ControllerFunctions = {
-   
+
     addProf: async (req, res) => {
         try {
 
@@ -66,14 +66,72 @@ var ControllerFunctions = {
                 await Cours.create({ name: "Cours - " + module_.name, hour: body.hour, min: body.min, moduleId: module_.id, requirementId: body.requirementId })
             }
             else if (type === "TP") {
-                await TDP.create({ name: "TP - " + module_.name , hour: 2, min: 0, moduleId:  module_.id, requirementId: body.requirementId })
+                await TDP.create({ name: "TP - " + module_.name, hour: 2, min: 0, moduleId: module_.id, requirementId: body.requirementId })
             }
             else if (type === "TD") {
-                await TDP.create({ name: "TD - " + module_.name , hour: 2, min: 0, moduleId:  module_.id, requirementId: body.requirementId})
+                await TDP.create({ name: "TD - " + module_.name, hour: 2, min: 0, moduleId: module_.id, requirementId: body.requirementId })
             }
-            
+
             res.status(200).send()
 
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getResponsables: async (req, res) => {
+        try {
+            var responsables = [];
+            const body = req.body;
+            const type = req.body.type;
+            if (type === 0) {
+                 responsables = await Users.findAll( { include: {
+                    model: Responsables,
+                    required: true,
+                     where: { courId: body.targetId }
+                } }    )
+            }
+            else if (type === 1) {
+                responsables = await Users.findAll( { include: {
+                    model: ResponsablesTDP,
+                    required: true,
+                     where: { tdpId: body.targetId }
+                } }    )
+                 
+            }
+            res.status(200).json(responsables)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    addResponsable: async (req, res) => {
+        try {
+            const body = req.body;
+            const type = req.body.type;
+            if (type === 0) {
+                const exist = await Responsables.findOne({ where: { userId: body.userId, courId: body.targetId } })
+                if (exist) {
+                    return res.status(400).json({ error: "Ce prof est déja un responsable " })
+                }
+                else {
+                    await Responsables.create({ userId: body.userId, courId: body.targetId })
+                }
+
+            }
+            else if (type === 1) {
+                const exist_ = await  ResponsablesTDP.findOne({ where: { userId: body.userId, tdpId: body.targetId } })
+                if (exist_) {
+                    return res.status(400).json({ error: "Ce prof est déja un responsable " })
+                }
+                else {
+                    await ResponsablesTDP.create({ userId: body.userId, tdpId: body.targetId })
+                }
+
+            }
+            res.status(200).send()
         }
         catch (err) {
             console.log(err)
@@ -112,7 +170,6 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
-
     getProfs: async (req, res) => {
         try {
             const profs = await Users.findAll({ where: { role: 1 } })
@@ -135,10 +192,12 @@ var ControllerFunctions = {
     },
     getTDP: async (req, res) => {
         try {
-            const tdps = await TDP.findAll({ where: { moduleId: req.body.module },include: {
-                model: Requirements,
-                required: true
-              } })
+            const tdps = await TDP.findAll({
+                where: { moduleId: req.body.module }, include: {
+                    model: Requirements,
+                    required: true
+                }
+            })
             res.status(200).json(tdps)
         }
         catch (err) {
@@ -148,10 +207,12 @@ var ControllerFunctions = {
     },
     getCours: async (req, res) => {
         try {
-            const cours = await Cours.findAll({ where: { moduleId: req.body.module } ,include: {
-                model: Requirements,
-                required: true
-              }})
+            const cours = await Cours.findAll({
+                where: { moduleId: req.body.module }, include: {
+                    model: Requirements,
+                    required: true
+                }
+            })
             res.status(200).json(cours)
         }
         catch (err) {
