@@ -57,12 +57,18 @@ var ControllerFunctions = {
     addSection: async (req, res) => {
         try {
             const body = req.body;
-
             if (!body.name) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            await Sections.create({ name: body.name, yearId: body.year })
-            res.status(200).send()
+            const SectionExist = await Sections.findOne({ where: { name: body.name } })
+            if (SectionExist) {
+                return  res.status(400).send({ error: "Section exist" });
+            }
+            else {
+                await Sections.create({ name: body.name, yearId: body.year })
+               res.status(200).send()
+            }
+           
         }
         catch (err) {
             console.log(err)
@@ -75,8 +81,15 @@ var ControllerFunctions = {
             if (!body.name) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            await SubRequirements.create({ name: body.name, requirementId: body.requirement })
-            res.status(200).send()
+            const SubRequirementsExist = await SubRequirements.findOne({ where: { name: body.name } })
+            if (SubRequirementsExist) {
+                return  res.status(400).send({ error: "SubRequirements exist" });
+            }
+            else {
+                await SubRequirements.create({ name: body.name, requirementId: body.requirement })
+                  res.status(200).send()
+            }
+          
         }
         catch (err) {
             console.log(err)
@@ -100,8 +113,15 @@ var ControllerFunctions = {
             if (!body.name) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            await Groups.create({ name:  body.name , sectionId:  body.section})
-            res.status(200).send()
+            const GroupsExist = await Groups.findOne({ where: { name: body.name } })
+            if (GroupsExist) {
+                return  res.status(400).send({ error: "Groups exist" });
+            }
+            else {
+                await Groups.create({ name:  body.name , sectionId:  body.section})
+                 res.status(200).send()
+            }
+           
         }
         catch (err) {
             console.log(err)
@@ -235,7 +255,7 @@ var ControllerFunctions = {
             }
             const requirementExist = await Requirements.findOne({ where: { name: body.name } })
             if (requirementExist) {
-                res.status(400).send({ requirement: "Requirement exist" });
+                return  res.status(400).send({ requirement: "Requirement exist" });
             }
             else {
                 await Requirements.create({ name: body.name, nombre: body.nombre })
