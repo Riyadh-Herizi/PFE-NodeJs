@@ -1,6 +1,6 @@
 module.exports = (sequelize, type) => {
 
-    return sequelize.define('requirements', {
+    return sequelize.define('subrequirements', {
         
         id: {
             type: type.INTEGER,
@@ -9,6 +9,8 @@ module.exports = (sequelize, type) => {
         },        
         
         name :type.STRING,
+    
+    
     })
  
 };

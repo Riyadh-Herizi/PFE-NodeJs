@@ -1,4 +1,4 @@
-const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections ,Groups } = require("../Sequelize");
+const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections ,Groups, SubRequirements } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 
@@ -63,6 +63,30 @@ var ControllerFunctions = {
             }
             await Sections.create({ name: body.name, yearId: body.year })
             res.status(200).send()
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    addSubRequirement: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!body.name) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await SubRequirements.create({ name: body.name, requirementId: body.requirement })
+            res.status(200).send()
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getSubRequirements: async (req, res) => {
+        try {
+            const subrequirements = await SubRequirements.findAll({ where: { requirementId: req.body.requirement } })
+            res.status(200).json(subrequirements)
         }
         catch (err) {
             console.log(err)
@@ -341,5 +365,6 @@ var ControllerFunctions = {
         await user.save()
         res.status(200).send({ message: "Logged out" })
     }
+
 }
 module.exports = ControllerFunctions;

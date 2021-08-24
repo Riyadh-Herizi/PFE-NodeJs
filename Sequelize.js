@@ -33,7 +33,8 @@ const Sections = SectionsModel(sequelize, Sequelize);
 const GroupsModel = require('./Models/Groups');
 const Groups = GroupsModel(sequelize, Sequelize);
 
-
+const SubRequirementsModel = require('./Models/SubRequirements');
+const SubRequirements = SubRequirementsModel(sequelize, Sequelize);
 // DEFINING RELATIONS
 
 Years.hasMany(Sections)
@@ -61,7 +62,8 @@ Modules.hasMany(Cours)
 Cours.belongsTo(Modules)
 Modules.hasMany(TDP)
 TDP.belongsTo(Modules)
-
+Requirements.hasMany(SubRequirements)
+SubRequirements.belongsTo(Requirements)
 
 sequelize.sync({ force: false })
     .then(async () => {
@@ -78,37 +80,37 @@ sequelize.sync({ force: false })
             }
             const years = await Years.findAll({})
             if (!years.length) {
-                const year1 = await Years.create({ name: "1er cycle préparatoire" , email :"etudiant1@esi-sba.dz" })
+                const year1 = await Years.create({ name: "1er cycle préparatoire", email: "etudiant1@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year1.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year1.id })
-                const year2 = await Years.create({ name: "2eme cycle préparatoire" , email :"etudiant2@esi-sba.dz"})
+                const year2 = await Years.create({ name: "2eme cycle préparatoire", email: "etudiant2@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year2.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year2.id })
-                const year3 = await Years.create({ name: "1er cycle supérieur" , email :"etudiant3@esi-sba.dz"})
+                const year3 = await Years.create({ name: "1er cycle supérieur", email: "etudiant3@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year3.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year3.id })
-                const year4 = await Years.create({ name: "2eme cycle supérieur - SIW" , email :"etudiant4.siw@esi-sba.dz"})
+                const year4 = await Years.create({ name: "2eme cycle supérieur - SIW", email: "etudiant4.siw@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year4.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year4.id })
-                const year5 = await Years.create({ name: "2eme cycle supérieur - ISI" , email :"etudiant4.isi@esi-sba.dz"})
+                const year5 = await Years.create({ name: "2eme cycle supérieur - ISI", email: "etudiant4.isi@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year5.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year5.id })
-                const year6 = await Years.create({ name: "3eme cycle supérieur - SIW" , email :"etudiant5.siw@esi-sba.dz"})
+                const year6 = await Years.create({ name: "3eme cycle supérieur - SIW", email: "etudiant5.siw@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year6.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year6.id })
-                const year7 = await Years.create({ name: "3eme cycle supérieur - ISI" , email :"etudiant5.isi@esi-sba.dz"})
+                const year7 = await Years.create({ name: "3eme cycle supérieur - ISI", email: "etudiant5.isi@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year7.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year7.id })
-                const requirement = await Requirements.create({ name: "Salle TD" , nombre : 15 })
-                const requirement2 = await Requirements.create({ name: "Amphi" , nombre : 8 })
-                const requirement3 = await Requirements.create({ name: "Salle TP" , nombre : 10 })
-                const module_ = await Modules.create({ name: "Anaylse 1",coefficient : 5, examenH : 2 , examenMin : 30 , semesterId: 1  })
-                await Cours.create({ name: "Cours - Anaylse 1" , hour: 2, min: 0, moduleId: module_.id ,requirementId: requirement2.id  })
-                await TDP.create({ name: "TD - Anaylse 1" , hour: 2, min: 0, moduleId: module_.id ,requirementId: requirement.id  })
-                const module2_ = await Modules.create({ name: "Algorithmique 1" ,coefficient : 5, examenH : 2 , examenMin : 30 , semesterId: 1 })
-                await Cours.create({ name: "Cours - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement2.id  })
-                await TDP.create({ name: "TD - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement.id  })
-                await TDP.create({ name: "TP - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement3.id  })
+                const requirement = await Requirements.create({ name: "Salle TD" })
+                const requirement2 = await Requirements.create({ name: "Amphi" })
+                const requirement3 = await Requirements.create({ name: "Salle TP" })
+                const module_ = await Modules.create({ name: "Anaylse 1", coefficient: 5, examenH: 2, examenMin: 30, semesterId: 1 })
+                await Cours.create({ name: "Cours - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement2.id })
+                await TDP.create({ name: "TD - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement.id })
+                const module2_ = await Modules.create({ name: "Algorithmique 1", coefficient: 5, examenH: 2, examenMin: 30, semesterId: 1 })
+                await Cours.create({ name: "Cours - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement2.id })
+                await TDP.create({ name: "TD - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement.id })
+                await TDP.create({ name: "TP - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement3.id })
                 const section1 = await Sections.create({ name: "Section A", yearId: year1.id })
                 const section2 = await Sections.create({ name: "Section B", yearId: year1.id })
                 await Groups.create({ name: "Groupe 1", sectionId: section1.id })
@@ -119,6 +121,23 @@ sequelize.sync({ force: false })
                 await Groups.create({ name: "Groupe 6", sectionId: section2.id })
                 await Groups.create({ name: "Groupe 7", sectionId: section2.id })
                 await Groups.create({ name: "Groupe 8", sectionId: section2.id })
+                await SubRequirements.create({ name: "Salle TD 01", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 02", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 03", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 04", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 05", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 06", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Salle TD 07", requirementId: requirement.id })
+                await SubRequirements.create({ name: "Amphi A", requirementId: requirement2.id })
+                await SubRequirements.create({ name: "Amphi B", requirementId: requirement2.id })
+                await SubRequirements.create({ name: "Amphi C", requirementId: requirement2.id })
+                await SubRequirements.create({ name: "Amphi D", requirementId: requirement2.id })
+                await SubRequirements.create({ name: "Amphi E", requirementId: requirement2.id })
+                await SubRequirements.create({ name: "Salle TP 01", requirementId: requirement3.id })
+                await SubRequirements.create({ name: "Salle TP 02", requirementId: requirement3.id })
+                await SubRequirements.create({ name: "Salle TP 03", requirementId: requirement3.id })
+                await SubRequirements.create({ name: "Salle TP 04", requirementId: requirement3.id })
+                await SubRequirements.create({ name: "Salle TP 05", requirementId: requirement3.id })
             }
 
         } catch (error) {
@@ -127,4 +146,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables ,TDP, ResponsablesTDP , Sections ,Groups}
+module.exports = { Users, Years, Semesters, Modules, Cours, Requirements, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements }
