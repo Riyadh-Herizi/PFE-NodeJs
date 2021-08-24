@@ -1,4 +1,4 @@
-const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables } = require("../Sequelize");
+const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections ,Groups } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 
@@ -48,6 +48,36 @@ var ControllerFunctions = {
                 await Modules.create({ name: body.name, coefficient: body.coefficient, examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
                 res.status(200).send()
             }
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    addSection: async (req, res) => {
+        try {
+            const body = req.body;
+
+            if (!body.name) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Sections.create({ name: body.name, yearId: body.year })
+            res.status(200).send()
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    addGroup: async (req, res) => {
+        try {
+            const body = req.body;
+
+            if (!body.name) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Groups.create({ name:  body.name , sectionId:  body.section})
+            res.status(200).send()
         }
         catch (err) {
             console.log(err)
@@ -218,6 +248,26 @@ var ControllerFunctions = {
         try {
             const modules = await Modules.findAll({ where: { semesterId: req.body.semester } })
             res.status(200).json(modules)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getSections: async (req, res) => {
+        try {
+            const sections = await Sections.findAll({ where: { yearId: req.body.year } })
+            res.status(200).json(sections)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getGroups: async (req, res) => {
+        try {
+            const groups = await Groups.findAll({ where: { sectionId: req.body.section } })
+            res.status(200).json(groups)
         }
         catch (err) {
             console.log(err)

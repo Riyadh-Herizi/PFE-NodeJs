@@ -28,7 +28,19 @@ const ResponsablesTDPModel = require('./Models/ResponsableTDP');
 const ResponsablesTDP = ResponsablesTDPModel(sequelize, Sequelize);
 const TDPModel = require('./Models/TDP');
 const TDP = TDPModel(sequelize, Sequelize);
+const SectionsModel = require('./Models/Sections');
+const Sections = SectionsModel(sequelize, Sequelize);
+const GroupsModel = require('./Models/Groups');
+const Groups = GroupsModel(sequelize, Sequelize);
+
+
 // DEFINING RELATIONS
+
+Years.hasMany(Sections)
+Sections.belongsTo(Years)
+
+Sections.hasMany(Groups)
+Groups.belongsTo(Sections)
 Years.hasMany(Semesters)
 Semesters.belongsTo(Years)
 Semesters.hasMany(Modules)
@@ -97,7 +109,16 @@ sequelize.sync({ force: false })
                 await Cours.create({ name: "Cours - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement2.id  })
                 await TDP.create({ name: "TD - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement.id  })
                 await TDP.create({ name: "TP - Algorithmique 1" , hour: 2, min: 0, moduleId: module2_.id ,requirementId: requirement3.id  })
-
+                const section1 = await Sections.create({ name: "Section A", yearId: year1.id })
+                const section2 = await Sections.create({ name: "Section B", yearId: year1.id })
+                await Groups.create({ name: "Groupe 1", sectionId: section1.id })
+                await Groups.create({ name: "Groupe 2", sectionId: section1.id })
+                await Groups.create({ name: "Groupe 3", sectionId: section1.id })
+                await Groups.create({ name: "Groupe 4", sectionId: section1.id })
+                await Groups.create({ name: "Groupe 5", sectionId: section2.id })
+                await Groups.create({ name: "Groupe 6", sectionId: section2.id })
+                await Groups.create({ name: "Groupe 7", sectionId: section2.id })
+                await Groups.create({ name: "Groupe 8", sectionId: section2.id })
             }
 
         } catch (error) {
@@ -106,4 +127,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables ,TDP, ResponsablesTDP}
+module.exports = { Users , Years ,Semesters , Modules ,Cours ,Requirements ,Responsables ,TDP, ResponsablesTDP , Sections ,Groups}
