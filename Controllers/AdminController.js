@@ -1,5 +1,6 @@
-const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections ,Groups, SubRequirements } = require("../Sequelize");
+const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
 const bcrypt = require("bcrypt");
+const axios = require('axios')
 const { Op } = require("sequelize");
 
 var ControllerFunctions = {
@@ -62,13 +63,64 @@ var ControllerFunctions = {
             }
             const SectionExist = await Sections.findOne({ where: { name: body.name } })
             if (SectionExist) {
-                return  res.status(400).send({ error: "Section exist" });
+                return res.status(400).send({ error: "Section exist" });
             }
             else {
                 await Sections.create({ name: body.name, yearId: body.year })
-               res.status(200).send()
+                res.status(200).send()
             }
-           
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    makePlanning: async (req, res) => {
+        try {
+            const body = req.body;
+            console.log(body)
+            const cours = await Cours.findAll({
+                include: {
+                    model: Modules,
+                    required: true,
+                    where: { semesterId: body.semester }
+                },
+                include: {
+                    model: Responsables,
+                    required: true,
+                    include: {
+                        model: Users,
+                        required: true,
+                    }
+                }
+            })
+            const tdps = await TDP.findAll({
+                include: {
+                    model: Modules,
+                    required: true,
+                    where: { semesterId: body.semester }
+                },
+                include: {
+                    model: ResponsablesTDP,
+                    required: true,
+                    include: {
+                        model: Users,
+                        required: true,
+                    }
+                }
+            })
+            const profs = await Users.findAll({ where: { role: 1 } })
+            axios.post('http://127.0.0.1:4001/make_planning', 
+               { cours: cours, tdps :tdps ,profs :profs}
+              )
+              .then(function (response) {
+                res.json(response.data);
+              })
+              .catch(function (error) {
+                res.send(error);
+              });
+          
         }
         catch (err) {
             console.log(err)
@@ -83,13 +135,13 @@ var ControllerFunctions = {
             }
             const SubRequirementsExist = await SubRequirements.findOne({ where: { name: body.name } })
             if (SubRequirementsExist) {
-                return  res.status(400).send({ error: "SubRequirements exist" });
+                return res.status(400).send({ error: "SubRequirements exist" });
             }
             else {
                 await SubRequirements.create({ name: body.name, requirementId: body.requirement })
-                  res.status(200).send()
+                res.status(200).send()
             }
-          
+
         }
         catch (err) {
             console.log(err)
@@ -115,13 +167,13 @@ var ControllerFunctions = {
             }
             const GroupsExist = await Groups.findOne({ where: { name: body.name } })
             if (GroupsExist) {
-                return  res.status(400).send({ error: "Groups exist" });
+                return res.status(400).send({ error: "Groups exist" });
             }
             else {
-                await Groups.create({ name:  body.name , sectionId:  body.section})
-                 res.status(200).send()
+                await Groups.create({ name: body.name, sectionId: body.section })
+                res.status(200).send()
             }
-           
+
         }
         catch (err) {
             console.log(err)
@@ -158,7 +210,7 @@ var ControllerFunctions = {
         try {
             const body = req.body;
             const type = body.type;
-            
+
             var profs = [];
             if (type === 0) {
                 const result = await Responsables.findAll({ where: { courId: req.body.targetId }, attributes: ['userId'] })
@@ -166,7 +218,7 @@ var ControllerFunctions = {
                 result.map((element) => {
                     ids.push(element.userId)
                 })
-                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids } , role : 1 } })
+                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids }, role: 1 } })
             }
             else if (type == 1) {
                 const result = await ResponsablesTDP.findAll({ where: { tdpId: req.body.targetId }, attributes: ['userId'] })
@@ -174,7 +226,7 @@ var ControllerFunctions = {
                 result.map((element) => {
                     ids.push(element.userId)
                 })
-                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids } , role : 1 } })
+                profs = await Users.findAll({ where: { id: { [Op.notIn]: ids }, role: 1 } })
             }
 
             res.status(200).json(profs)
@@ -255,7 +307,7 @@ var ControllerFunctions = {
             }
             const requirementExist = await Requirements.findOne({ where: { name: body.name } })
             if (requirementExist) {
-                return  res.status(400).send({ requirement: "Requirement exist" });
+                return res.status(400).send({ requirement: "Requirement exist" });
             }
             else {
                 await Requirements.create({ name: body.name, nombre: body.nombre })

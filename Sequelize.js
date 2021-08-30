@@ -35,11 +35,33 @@ const Groups = GroupsModel(sequelize, Sequelize);
 
 const SubRequirementsModel = require('./Models/SubRequirements');
 const SubRequirements = SubRequirementsModel(sequelize, Sequelize);
+
+const PlanningsModel = require('./Models/Planning');
+const Plannings = PlanningsModel(sequelize, Sequelize);
+
+const PositionsModel = require('./Models/Position');
+const Positions = PositionsModel(sequelize, Sequelize);
+const PositionsCoursModel = require('./Models/PositionsCours');
+const PositionsCours = PositionsCoursModel(sequelize, Sequelize);
+
 // DEFINING RELATIONS
+Plannings.hasMany(Positions)
+Positions.belongsTo(Plannings)
+
+Cours.hasMany(PositionsCours)
+PositionsCours.belongsTo(Cours)
+
+TDP.hasMany(Positions)
+Positions.belongsTo(TDP)
+
+Positions.belongsTo(Users)
+Users.hasMany(Positions)
+
+PositionsCours.belongsTo(Users)
+Users.hasMany(PositionsCours)
 
 Years.hasMany(Sections)
 Sections.belongsTo(Years)
-
 Sections.hasMany(Groups)
 Groups.belongsTo(Sections)
 Years.hasMany(Semesters)
@@ -76,10 +98,8 @@ sequelize.sync({ force: false })
                 const random = await bcrypt.genSalt(10);
                 const Hashedpassword = await bcrypt.hash("12345678", random);
                 await Users.create({ email: "d.amarbensaber@esi-sba.dz", firstname: "Dr.Djamel", lastname: "Amar Ben Saber", role: 0, username: "d.bensaber", password: Hashedpassword, type: "NO" })
-                await Users.create({ email: "n.mahammed@esi-sba.dz", firstname: "Nadir", lastname: "Mahammed", role: 1, username: "n.mahammed", password: Hashedpassword, type: "MCA" })
-            }
-            const years = await Years.findAll({})
-            if (!years.length) {
+                const prof = await Users.create({ email: "n.mahammed@esi-sba.dz", firstname: "Nadir", lastname: "Mahammed", role: 1, username: "n.mahammed", password: Hashedpassword, type: "MCA" })
+                const prof2 = await Users.create({ email: "h.badsi@esi-sba.dz", firstname: "Hichem", lastname: "Badsi", role: 1, username: "h.badsi", password: Hashedpassword, type: "MCB" })
                 const year1 = await Years.create({ name: "1er cycle préparatoire", email: "etudiant1@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year1.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year1.id })
@@ -105,12 +125,12 @@ sequelize.sync({ force: false })
                 const requirement2 = await Requirements.create({ name: "Amphi" })
                 const requirement3 = await Requirements.create({ name: "Salle TP" })
                 const module_ = await Modules.create({ name: "Anaylse 1", coefficient: 5, examenH: 2, examenMin: 30, semesterId: 1 })
-                await Cours.create({ name: "Cours - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement2.id })
-                await TDP.create({ name: "TD - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement.id })
+                const cour1 = await Cours.create({ name: "Cours - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement2.id })
+                const td = await TDP.create({ name: "TD - Anaylse 1", hour: 2, min: 0, moduleId: module_.id, requirementId: requirement.id })
                 const module2_ = await Modules.create({ name: "Algorithmique 1", coefficient: 5, examenH: 2, examenMin: 30, semesterId: 1 })
-                await Cours.create({ name: "Cours - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement2.id })
-                await TDP.create({ name: "TD - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement.id })
-                await TDP.create({ name: "TP - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement3.id })
+                const cour2 = await Cours.create({ name: "Cours - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement2.id })
+                const td2 =  await TDP.create({ name: "TD - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement.id })
+                const tp = await TDP.create({ name: "TP - Algorithmique 1", hour: 2, min: 0, moduleId: module2_.id, requirementId: requirement3.id })
                 const section1 = await Sections.create({ name: "Section A", yearId: year1.id })
                 const section2 = await Sections.create({ name: "Section B", yearId: year1.id })
                 await Groups.create({ name: "Groupe 1", sectionId: section1.id })
@@ -138,6 +158,11 @@ sequelize.sync({ force: false })
                 await SubRequirements.create({ name: "Salle TP 03", requirementId: requirement3.id })
                 await SubRequirements.create({ name: "Salle TP 04", requirementId: requirement3.id })
                 await SubRequirements.create({ name: "Salle TP 05", requirementId: requirement3.id })
+                await Responsables.create({ userId : prof.id , courId :cour1.id  })
+                await Responsables.create({ userId : prof2.id , courId :cour2.id  })
+                await ResponsablesTDP.create({ userId : prof.id , tdpId :td.id  })
+                await ResponsablesTDP.create({ userId : prof.id , tdpId :td2.id  })
+                await ResponsablesTDP.create({ userId : prof2.id , tdpId :tp.id  })
             }
 
         } catch (error) {
@@ -146,4 +171,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users, Years, Semesters, Modules, Cours, Requirements, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements }
+module.exports = { Users, Years, Semesters, Modules, Cours, Requirements, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements ,Plannings , Positions ,PositionsCours }

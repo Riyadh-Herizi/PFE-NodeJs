@@ -1,15 +1,19 @@
 from flask import Flask
-
-
+from flask import request
+from flask import jsonify
 app = Flask(__name__)
-
 
 @app.route('/make_planning', methods=['Post'])
 def make_planning():
-    return "Planning is generating"
+     content = request.json
+     cours = content["cours"]
+     profs = content["profs"]
+     tdps = content["tdps"]
+     
+     return jsonify(tdps)
 
 #To setup Flask use : 
-# 1- Install python >= 3.6 before using flask
+# 1- Install python >= 3.6 before using flask and make sure that you have the path added on your system 
 # 2- Run the commands : 
 #   pip install Flask
 #   $env:FLASK_APP = "generator"
