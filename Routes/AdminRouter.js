@@ -49,4 +49,5 @@ router.post('/getmodules',isAdmin , AdminController.getModules)
 router.post('/getsemesters',isAdmin , AdminController.getSemesters)
 router.post('/getprofs', isAdmin , AdminController.getProfs)
 router.post('/logout', isAdmin , AdminController.logout)
+
 module.exports = router;

@@ -9,8 +9,12 @@ module.exports = (sequelize, type) => {
             autoIncrement: true
         },        
         name :type.STRING,
-        start :Sequelize.DATE,
-        end :Sequelize.DATE
+        auto :{
+            type: type.INTEGER, 
+            defaultValue: 0
+        }, 
+        start :Sequelize.DATEONLY,
+        end :   Sequelize.DATEONLY
         
 
        

@@ -1,4 +1,4 @@
-const { Users, Years, Semesters, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
+const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
@@ -79,48 +79,120 @@ var ControllerFunctions = {
     makePlanning: async (req, res) => {
         try {
             const body = req.body;
-            console.log(body)
+            const group = await Groups.findOne({ where: { id: body.group } })
+            const section = await Sections.findOne({ where: { id: group.id } })
+            const startDate = new Date(body.start)
+            const endDate = new Date(body.end)
+            console.log(startDate, endDate)
             const cours = await Cours.findAll({
-                include: {
+                include: [{
                     model: Modules,
                     required: true,
                     where: { semesterId: body.semester }
-                },
-                include: {
+                }, {
                     model: Responsables,
-                    required: true,
+                    required: false,
                     include: {
                         model: Users,
-                        required: true,
+                        required: false,
                     }
-                }
+                }, {
+                    model: PositionsCours,
+                    required: false,
+                    include: {
+                        model: Plannings,
+                        required: true,
+                        where: {
+                            auto: 1, [Op.or]: [
+                                { start: { [Op.between]: [startDate, endDate] } },
+                                { end: { [Op.between]: [startDate, endDate] } }]
+                        },
+                        include: {
+                            model: Groups,
+                            required: true,
+                            where: { sectionId: section.id }
+                        }
+                    }
+                }]
+
             })
+
             const tdps = await TDP.findAll({
-                include: {
+                include: [{
                     model: Modules,
                     required: true,
                     where: { semesterId: body.semester }
-                },
-                include: {
+                }, {
                     model: ResponsablesTDP,
-                    required: true,
+                    required: false,
                     include: {
                         model: Users,
                         required: true,
                     }
-                }
+                }]
             })
-            const profs = await Users.findAll({ where: { role: 1 } })
-            axios.post('http://127.0.0.1:4001/make_planning', 
-               { cours: cours, tdps :tdps ,profs :profs}
-              )
-              .then(function (response) {
-                res.json(response.data);
-              })
-              .catch(function (error) {
-                res.send(error);
-              });
-          
+            const profs = await Users.findAll({
+                where: { role: 1 },
+                include: [{
+                    model: Positions,
+                    required: false,
+                },
+                {
+                    model: PositionsCours,
+                    required: false,
+                }]
+            })
+            const requirements = await SubRequirements.findAll({
+                include: [{
+                    model: PositionsCours,
+                    required: false,
+                    include: {
+                        model: Plannings,
+                        required: true,
+                        where: {
+                            auto: 1, [Op.or]: [
+                                { start: { [Op.between]: [startDate, endDate] } },
+                                { end: { [Op.between]: [startDate, endDate] } }]
+                        }
+                    }
+                },
+                {
+                    model: Positions,
+                    required: false,
+                    include: {
+                        model: Plannings,
+                        required: true,
+                        where: {
+                            auto: 1, [Op.or]: [
+                                { start: { [Op.between]: [startDate, endDate] } },
+                                { end: { [Op.between]: [startDate, endDate] } }]
+                        }
+                    }
+                }
+                ]
+            })
+
+
+
+            axios.post('http://127.0.0.1:4001/make_planning',
+                { cours: cours, tdps: tdps, profs: profs, requirements: requirements }
+            )
+                .then(function (response) {
+                    for(let i= 0 ; i< response.data.length ;i++) {
+                        console.log("day : " + i)
+                        for(let j= 0 ; j< response.data[i].length ;j++) {
+                            console.log(response.data[i][j].name + " "+ response.data[i][j].hour +"h "+response.data[i][j].min+"min")
+                            console.log(" start : " +response.data[i][j].startH +":"+response.data[i][j].startMin)
+                            console.log(" end : " +response.data[i][j].endH +":"+response.data[i][j].endMin)
+                            console.log("---------------------------------------------------------" )
+                        }
+                    };
+                    res.json(response.data)
+                })
+                .catch(function (error) {
+                    res.send(error);
+                });
+
         }
         catch (err) {
             console.log(err)
