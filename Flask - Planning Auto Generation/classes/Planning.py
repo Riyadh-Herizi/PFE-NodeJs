@@ -195,6 +195,7 @@ class Planning:
                             print("all days are fulled problem working on solution")
                             fulled = []
                             self.days= [[],[],[],[],[],[],[]]
+                            self.start_generating()
                             break
                         index = random_dayIndex(index)
                         continue
@@ -223,6 +224,7 @@ class Planning:
                             print("all days are fulled problem working on solution")
                             fulled = []
                             self.days= [[],[],[],[],[],[],[]]
+                            self.start_generating()
                             break
                     index = random_dayIndex(index)
                     continue
