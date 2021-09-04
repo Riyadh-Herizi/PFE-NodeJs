@@ -1,6 +1,9 @@
 import random
 
 class Planning:
+    # Grades 
+    grades_cours = {"MCA" : 0 , "MCB" : 0 , "Pr" : 0  }
+    grades_tdp= {"MCA" : 0 , "MCB" : 0 ,  "Pr" : 0 }
     # Hard constraints 
     allowed_time = [0,7,7,5,7,7,0]
     Restricted_all = [{"startH" : 17, "endH" : 30 ,"startMin" : 23, "endMin" : 59 },
@@ -22,10 +25,12 @@ class Planning:
             self.days = [ [], [], [], [], [],[], [] ]
     
     def maximum(self,a, b):
+
         if a >= b:
             return a
         else:
             return b
+
     def interval_intersect(self,a,b):
         a0,a1 = a
         b0,b1 = b
@@ -42,8 +47,6 @@ class Planning:
         else :
             return False
         
-          
-       
     def get_next_time(self,day,element):
         print("THIS IS THE OVERLAPPED TIME")
         print(self.interval_intersect((self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60,self.current_time[day]["startH"]+element["hour"] +
@@ -87,9 +90,7 @@ class Planning:
                 cour["endMin"] = position["endMin"]
                 self.days[position["day"]].append(cour)
                 self.Restricted_days[position["day"]].append({"startH" : position["startH"], "endH" : position["endH"] ,
-                                        "startMin" : position["startMin"], "endMin" : position["endMin"] })
-        
-                
+                                        "startMin" : position["startMin"], "endMin" : position["endMin"] })     
 
     def sum_time(self,index):
         sumH = 0 
@@ -127,8 +128,10 @@ class Planning:
                 self.init_cours()
                 self.init_population()
                 self.set_time()
+                self.setRequirement()
+                self.setProf()
+                self.evalute_planning()
                 
-
     def set_time(self):
         self.current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},
                  {"startH" : 8,"startMin" : 0}, {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0}] 
@@ -159,7 +162,6 @@ class Planning:
 
         print(" Finish Setting time : success")
        
-   
     def init_population(self):
         fulled = []
         index = random.randint(1,5)  
@@ -233,13 +235,59 @@ class Planning:
                 i = i + 1
                 fulled = [] 
            
-               
-            
-                
-            
-            
-        
+     # NOT READY FUNCTIONS
+  
+    def crossover(self , day1 , day2):
+        pass 
+   
+    def mutation(self):
+        pass         
+
+    def evalute_planning(self) :
+        pass
+
+    def evalute_session(self, element) :
+        pass
+
+    def setRequirement(self) :
+        for day in self.days :
+            for session in day :
+                requirement = self.getRandomRequirement(session)
+                session["requirement"] = requirement
     
+    def setProf(self) :
+        for day in self.days :
+            for session in day :
+                prof = self.getRandomProf(session)
+                session["prof"] = prof
+
+    def getRandomRequirement(self,session) :
+        reqs = []
+
+        for requirement in self.requirements.requirements :
+            if requirement["requirementId"] == session["requirementId"] :
+                reqs.append(requirement)
+        if len(reqs) > 0  :
+            return reqs[random.randint(0,len(reqs) -1)]  
+        else :
+            return None
+
+    def getRandomProf(self,session) :
+        profs = []
+        if session["type"] == 0 :
+            for prof in session["repsonsables"] :
+                profs.append(prof)
+            if len(profs) > 0  :
+                return profs[random.randint(0,len(profs) -1)]  
+            else :
+                return None
+        else : 
+            for prof in session["repsonsablestdps"] :
+                profs.append(prof)
+            if len(profs) > 0  :
+                return profs[random.randint(0,len(profs) -1)]  
+            else :
+                return None
 
 # init population with applying contraint
 # fitness function
