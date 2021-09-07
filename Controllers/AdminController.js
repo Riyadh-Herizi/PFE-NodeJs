@@ -2,6 +2,7 @@ const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, 
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
+const Planning = require("../Models/Planning");
  function compare( a, b ) {
         if ( a.startH < b.startH ){
           return -1;
@@ -584,6 +585,10 @@ var ControllerFunctions = {
           
             for ( var i = 0 ; i < planning.positions.length;i++) {
                 console.log("Position : " +planning.positions[i].tdp.name)
+                console.log("Time start : " +planning.positions[i].startH + ":"+planning.positions[i].startMin )
+                console.log("Time end : " +planning.positions[i].endH + ":"+planning.positions[i].endMin )
+                console.log("Salle : " +planning.positions[i].subrequirement.name  )
+                console.log("Prof : " +planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname  )
                 days[planning.positions[i].day].push({
                     startH : planning.positions[i].startH ,
                     endH :planning.positions[i].endH ,
@@ -595,7 +600,11 @@ var ControllerFunctions = {
                 })
             }
             for ( var i = 0 ; i < planning.positionscours.length;i++) {
-                console.log("Position Cours : " +planning.positionscours[i].cour.name)
+                console.log("Position : " +planning.positionscours[i].cour.name)
+                console.log("Time start : " +planning.positionscours[i].startH + ":"+planning.positionscours[i].startMin )
+                console.log("Time end : " +planning.positionscours[i].endH + ":"+planning.positionscours[i].endMin )
+                console.log("Salle : " +planning.positionscours[i].subrequirement.name  )
+                console.log("Prof : " +planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname  )
                 days[planning.positionscours[i].day].push({
                     startH : planning.positionscours[i].startH ,
                     endH :planning.positionscours[i].endH ,
@@ -609,7 +618,8 @@ var ControllerFunctions = {
             }
             for(let i = 0 ;i< 7 ;i++)
             days[i].sort(compare)
-            res.status(200).json(days)
+            res.status(200).json({days : days ,
+                    name : planning.name})
         }
         catch (err) {
             console.log(err)

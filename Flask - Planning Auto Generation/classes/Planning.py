@@ -6,12 +6,10 @@ class Planning:
     grades_tdp= {"MCA" : 0 , "MCB" : 0 ,  "Pr" : 0 }
     # Hard constraints 
     allowed_time = [0,7,7,5,7,7,0]
-    Restricted_all = [{"startH" : 17, "endH" : 30 ,"startMin" : 23, "endMin" : 59 },
-                      {"startH" : 00, "endH" : 00 ,"startMin" : 7, "endMin" : 59 } ]
+   
     Restricted_days = [[],[],[],[{"startH" : 14, "endH" : 00 ,"startMin" : 17, "endMin" : 29 }],[],[],[]]
     
-    # Soft constraints 
-    Not_allowed_all = [{"startH" : 13, "endH" : 14 ,"startMin" : 0, "endMin" : 0 }]
+    
     
     # Generation state variables
     current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},
@@ -48,7 +46,7 @@ class Planning:
             return False
         
     def get_next_time(self,day,element):
-        print("THIS IS THE OVERLAPPED TIME")
+        print("Day : ------------------ " , day )
         print(self.interval_intersect((self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60,self.current_time[day]["startH"]+element["hour"] +
                 element["min"]/60),(12.10,13.59)))
         current= self.current_time[day]
@@ -59,7 +57,7 @@ class Planning:
             if self.conflict(restricted_time,current,element):
                 print(" the algorithm found a conflict in day : ",day, " for element : ",element["name"])
                 self.current_time[day] = {"startH" : restricted_time["endH"],"startMin" : restricted_time["endMin"]}
-                print("ALGORITHM getting next time : ---------> ")
+               
                 print( "int 1 --> ",self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60 ," , " ,  self.current_time[day]["startH"]+element["hour"] +
                 element["min"]/60)
                 if  self.interval_intersect((self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60,self.current_time[day]["startH"]+element["hour"] +
@@ -137,36 +135,7 @@ class Planning:
                 max_iteration = 100
                 result = False
                 mutation_counter = 0
-                while max_iteration > 0 and not result :
-    
-                    print("Iteration number : ", 101 - max_iteration)
-                    evaluation = self.evalute_planning()
-                    days = []
-                    correct_days = []
-                    for i in range(1,6) :
-                        if not evaluation[i]["hard_constraints"] :
-                            days.append(i)
-                        else :
-                            correct_days.append(i)
-                    result = evaluation[1]["hard_constraints"] and evaluation[2]["hard_constraints"] and evaluation[3]["hard_constraints"] and evaluation[4]["hard_constraints"] and evaluation[5]["hard_constraints"]
-                    if not result :
-                        mutation_counter += 1
-                        if len(days)> 1 :
-                            index1 = random.randint(0,len(days)-1)
-                            index2 = random.randint(0,len(days)-1)
-                            while index1 == index2 :
-                                index1 = random.randint(0,len(days)-1)
-                                index2 = random.randint(0,len(days)-1)
-                            self.crossover(index1,index2)
-                        else :
-                            m_index = random.randint(0,len(correct_days)-1)
-                            self.mutation(m_index)
-                        if mutation_counter > 100 :
-                            if len(correct_days) > 1 :
-                                m_index = random.randint(0,len(correct_days)-1)
-                                self.mutation(m_index)
-
-                    max_iteration -= 1
+                
                 
     def set_time(self):
         self.current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},

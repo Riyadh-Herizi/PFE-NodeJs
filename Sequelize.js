@@ -203,10 +203,10 @@ sequelize.sync({ force: false })
                 const btw_tp = await TDP.create({ name: "TP - Bureautique et web", hour: 2, min: 0, moduleId: btw.id, requirementId: salles_tp.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const systeme1 = await Modules.create({ name: "Systèmes d'exploitation 1", coefficient: 3, examenH: 1, examenMin: 30, semesterId: 1 })
-                const systeme1_tp = await TDP.create({ name: "TP - Bureautique et web", hour: 2, min: 0, moduleId: systeme1.id, requirementId: salles_tp.id })
+                const systeme1_tp = await TDP.create({ name: "TP - Systèmes d'exploitation 1", hour: 2, min: 0, moduleId: systeme1.id, requirementId: salles_tp.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const tee = await Modules.create({ name: "TEE", coefficient: 2, examenH: 1, examenMin: 30, semesterId: 1 })
-                const tee_td = await TDP.create({ name: "TD - Algébre 1", hour: 2, min: 0, moduleId: tee.id, requirementId: salles_td.id })
+                const tee_td = await TDP.create({ name: "TD - TEE", hour: 2, min: 0, moduleId: tee.id, requirementId: salles_td.id })
                  
                 // LES AMPHI
                 const amphiA = await SubRequirements.create({ name: "Amphi A", requirementId: amphis.id })
