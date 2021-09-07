@@ -1,7 +1,6 @@
 
 module.exports = (sequelize, type) => {
     return sequelize.define('users', {
-
         id: {
             type: type.INTEGER,
             primaryKey: true,
@@ -16,4 +15,4 @@ module.exports = (sequelize, type) => {
         type : type.STRING,
         refreshtoken : type.TEXT
     })
-};
+};  

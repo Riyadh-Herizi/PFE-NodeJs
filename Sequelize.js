@@ -113,6 +113,8 @@ PositionsCours.belongsTo(SubRequirements)
 SubRequirements.hasMany(Positions)
 Positions.belongsTo(SubRequirements)
 
+Semesters.hasMany(Plannings)
+Plannings.belongsTo(Semesters)
 sequelize.sync({ force: false })
     .then(async () => {
         // VERIEFING THE CONNECTION 
@@ -146,7 +148,7 @@ sequelize.sync({ force: false })
 
                 // LES ANNEES ET LES SEMESTRES DE ESI SBA
                 const year1 = await Years.create({ name: "1er cycle préparatoire", email: "etudiant1@esi-sba.dz" })
-                await Semesters.create({ name: "Semestre 1", yearId: year1.id })
+                const s1 = await Semesters.create({ name: "Semestre 1", yearId: year1.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year1.id })
                 const year2 = await Years.create({ name: "2eme cycle préparatoire", email: "etudiant2@esi-sba.dz" })
                 await Semesters.create({ name: "Semestre 1", yearId: year2.id })
@@ -207,7 +209,7 @@ sequelize.sync({ force: false })
                 const tee_td = await TDP.create({ name: "TD - Algébre 1", hour: 2, min: 0, moduleId: tee.id, requirementId: salles_td.id })
                  
                 // LES AMPHI
-                await SubRequirements.create({ name: "Amphi A", requirementId: amphis.id })
+                const amphiA = await SubRequirements.create({ name: "Amphi A", requirementId: amphis.id })
                 await SubRequirements.create({ name: "Amphi B", requirementId: amphis.id })
                 await SubRequirements.create({ name: "Amphi C", requirementId: amphis.id })
                 await SubRequirements.create({ name: "Amphi D", requirementId: amphis.id })
@@ -318,12 +320,6 @@ sequelize.sync({ force: false })
                 await ResponsablesTDP.create({ userId: h_mami.id, tdpId: tee_td.id })
                 
 
-
-
-               /* const planning= await Plannings.create({ auto: 1 , start : new Date("2021-08-31"),
-                end :new Date("2021-09-31"),groupId: group2_1cpi.id, name: "Planning 1 CP - Section A - Groupe 02" })
-                await PositionsCours.create({ userId: n_amroun.id, planningId: planning.id, courId: analylse1_cour.id, subrequirementId: amphiA.id })
-                */
             }
 
         } catch (error) {

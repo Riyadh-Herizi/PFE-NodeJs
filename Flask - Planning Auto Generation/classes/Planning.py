@@ -60,7 +60,7 @@ class Planning:
                 print(" the algorithm found a conflict in day : ",day, " for element : ",element["name"])
                 self.current_time[day] = {"startH" : restricted_time["endH"],"startMin" : restricted_time["endMin"]}
                 print("ALGORITHM getting next time : ---------> ")
-                print( "int 1 --> ",self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60 ," , " ,  elf.current_time[day]["startH"]+element["hour"] +
+                print( "int 1 --> ",self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60 ," , " ,  self.current_time[day]["startH"]+element["hour"] +
                 element["min"]/60)
                 if  self.interval_intersect((self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60,self.current_time[day]["startH"]+element["hour"] +
                 element["min"]/60),(12,14)) >= 1 : 
@@ -88,6 +88,8 @@ class Planning:
                 cour["startMin"] = position["startMin"]
                 cour["endH"] = position["endH"]
                 cour["endMin"] = position["endMin"]
+                cour["requirement"] = position["subrequirement"]
+                cour["prof"] = position["user"]
                 self.days[position["day"]].append(cour)
                 self.Restricted_days[position["day"]].append({"startH" : position["startH"], "endH" : position["endH"] ,
                                         "startMin" : position["startMin"], "endMin" : position["endMin"] })     
@@ -125,12 +127,45 @@ class Planning:
             if available_time < required_time : 
                  print("Can't generate planning : NO_ENOGH_TIME , Available time = " , available_time ,"H Require time = " , required_time )
             else :
+                self.init()
                 self.init_cours()
                 self.init_population()
                 self.set_time()
                 self.setRequirement()
                 self.setProf()
-                self.evalute_planning()
+                max_iteration = 100
+                result = False
+                mutation_counter = 0
+                while max_iteration > 0 and not result :
+    
+                    print("Iteration number : ", 101 - max_iteration)
+                    evaluation = self.evalute_planning()
+                    days = []
+                    correct_days = []
+                    for i in range(1,6) :
+                        if not evaluation[i]["hard_constraints"] :
+                            days.append(i)
+                        else :
+                            correct_days.append(i)
+                    result = evaluation[1]["hard_constraints"] and evaluation[2]["hard_constraints"] and evaluation[3]["hard_constraints"] and evaluation[4]["hard_constraints"] and evaluation[5]["hard_constraints"]
+                    if not result :
+                        mutation_counter += 1
+                        if len(days)> 1 :
+                            index1 = random.randint(0,len(days)-1)
+                            index2 = random.randint(0,len(days)-1)
+                            while index1 == index2 :
+                                index1 = random.randint(0,len(days)-1)
+                                index2 = random.randint(0,len(days)-1)
+                            self.crossover(index1,index2)
+                        else :
+                            m_index = random.randint(0,len(correct_days)-1)
+                            self.mutation(m_index)
+                        if mutation_counter > 100 :
+                            if len(correct_days) > 1 :
+                                m_index = random.randint(0,len(correct_days)-1)
+                                self.mutation(m_index)
+
+                    max_iteration -= 1
                 
     def set_time(self):
         self.current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},
@@ -162,6 +197,34 @@ class Planning:
 
         print(" Finish Setting time : success")
        
+    def set_time_day(self,day):
+        self.current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},
+                 {"startH" : 8,"startMin" : 0}, {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0}] 
+        print(" Setting time ...")
+        for element in self.days[day]:
+                if "ignore" in  element:
+                    continue
+                current = self.get_next_time(day,element)
+                # Init the start of the element
+                element["startH"] = current["startH"]
+                element["startMin"] = current["startMin"]
+                # Init the end of the element
+                endH = current["startH"] + element["hour"] + (current["startMin"] + element["min"]) % 60
+                endMin = (current["startMin"] + element["min"]) % 60
+                element["endH"] =  endH
+                element["endMin"] = endMin
+                # Updating new start for next 
+                print("we will set time to : ",endH,":",endMin)
+                self.current_time[day]["startH"] = endH
+                self.current_time[day]["startMin"] = endMin
+
+        print(" Finish Setting time FOR DAY : success")
+    
+    def init(self) :
+        for cour in self.cours.cours :
+            cour['type'] = 0
+        for tdp in self.tdps.tdps :
+            tdp['type'] = 1
     def init_population(self):
         fulled = []
         index = random.randint(1,5)  
@@ -185,7 +248,6 @@ class Planning:
                     print("time already used  on day : ",index," is : ",used_time, "H available time : ",self.allowed_time[index] - used_time ," H")
                     if sum_time <= self.allowed_time[index] :
                         self.cours.cours[i]["day"] = index
-                        self.cours.cours[i]["type"] = 0
                         self.days[index].append(self.cours.cours[i])
                         print(" - ",self.cours.cours[i]["name"] ," affected to day --> ", self.cours.cours[i]["day"])
                     else :
@@ -212,7 +274,6 @@ class Planning:
                 print("time already used  on day : ",index," is : ",used_time, "H available time : ",self.allowed_time[index] - used_time ," H")
                 if sum_time <= self.allowed_time[index] :
                     self.tdps.tdps[i]["day"] = index
-                    self.tdps.tdps[i]["type"] = 1
                     self.days[index].append(self.tdps.tdps[i])
                     print(" - ",self.tdps.tdps[i]["name"] ," affected to day --> ", self.tdps.tdps[i]["day"]) 
                     
@@ -238,16 +299,115 @@ class Planning:
      # NOT READY FUNCTIONS
   
     def crossover(self , day1 , day2):
-        pass 
-   
-    def mutation(self):
-        pass         
+        save_day1 = []
+        save_day2 = []
+        
+        elements= [] 
+        print('crossover call for day : ' ,day1," ",day2)
+        for element in self.days[day1] :
+            save_day1.append(element)
+            elements.append(element)
+        for element in self.days[day2] :
+            save_day2.append(element)
+            elements.append(element)
+        new_day1 = []
+        new_day2 = []
+        for element in self.days[day1] :
+            if "ignore" in element :
+                new_day1.append(element)
+        for element in self.days[day2]:
+            if  "ignore" in element :
+                new_day2.append(element)
+        if len(new_day1) or len(new_day2) : 
+            print("There is cours to keep") 
+        self.days[day1] = new_day1
+        self.days[day2] = new_day2       
+        fulled = []
+        print(day1 ,' ', day2)
+        index = random.randint(day1,day2) if day1 < day2 else random.randint(day2,day1) 
+        
+ 
+        i = 0
+        while i <= len(elements) - 1 :
+
+            if not "ignore" in elements[i] :
+                    used_time = self.sum_time(index)
+                    sum_time = used_time + elements[i]["hour"] + elements[i]["min"]  / 60
+                    print("time already used  on day : ",index," is : ",used_time, "H available time : ",self.allowed_time[index] - used_time ," H")
+                    if sum_time <= self.allowed_time[index] :
+                        elements[i]["day"] = index
+                        self.days[index].append(elements[i])
+                        print("CROSSOVER  - ",elements[i]["name"] ," affected to day --> ", elements[i]["day"])
+                    else :
+                        print("CROSSOVER  - ",elements[i]["name"] ," can't be affected to day --> ", index ," LIMIT_TIME_REACHED") 
+                        fulled.append(index)
+                        
+                        if len(fulled) == 5 :
+                            print("all days are fulled problem working on solution")
+                            fulled = []
+                            self.days[day1]= []
+                            self.days[day2]= []
+                            for element in save_day1 :
+                                self.days[day1].append(element)
+                                
+                            for element in save_day2 :
+                                self.days[day2].append(element)
+                            self.crossover(day1,day2)
+                            break
+                        index = random.randint(day1,day2) if day1 < day2 else random.randint(day2,day1) 
+                        continue
+            index = random.randint(day1,day2) if day1 < day2 else random.randint(day2,day1) 
+            i = i + 1
+            fulled = []
+
+            self.set_time_day(day1) 
+            self.set_time_day(day2) 
+
+    def mutation(self,day):
+        print('Mutation function is called')         
 
     def evalute_planning(self) :
-        pass
+        print("evaluate current population")
+        evaluation_results = [{"hard_constraints" : False}  , {"hard_constraints" : False}  , {"hard_constraints" : False}  , {"hard_constraints" : False} 
+        , {"hard_constraints" : False}  , {"hard_constraints" : False}  , {"hard_constraints" : False} ]
+        for i in range(7) :
+            evaluation_results[i]["hard_constraints"] = self.evalute_day(i)
+
+        return evaluation_results
+                
+    def evalute_day(self, index) :
+        day_evaluation = True
+        for element in self.days[index] :
+            day_evaluation = day_evaluation and self.evalute_session(element) 
+        return day_evaluation
 
     def evalute_session(self, element) :
-        pass
+        prof = element["prof"]["user"]
+        salle = element["requirement"] 
+        prof_bool = True
+        salle_bool = True
+        for position in prof["positions"] :
+            if self.interval_intersect((position["startH"] +position["startMin"]/60 ,position["endH"]+position["endMin"]/60),
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                prof_bool = False
+                break
+        for position in prof["positionscours"] :
+            if self.interval_intersect((position["startH"] +position["startMin"]/60 ,position["endH"]+position["endMin"]/60),
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                prof_bool = False
+                break
+
+        for use in salle["positions"] :
+            if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                salle_bool = False
+                break
+        for use in salle["positionscours"] :
+            if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                salle_bool = False
+                break
+        return prof_bool and salle_bool
 
     def setRequirement(self) :
         for day in self.days :
@@ -275,6 +435,9 @@ class Planning:
     def getRandomProf(self,session) :
         profs = []
         if session["type"] == 0 :
+            print("********************************")
+            print(session)
+            print("********************************")
             for prof in session["repsonsables"] :
                 profs.append(prof)
             if len(profs) > 0  :

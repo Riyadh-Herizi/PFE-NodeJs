@@ -13,8 +13,7 @@ module.exports = (sequelize, type) => {
             type: type.INTEGER, 
             defaultValue: 0
         }, 
-        start :Sequelize.DATEONLY,
-        end :   Sequelize.DATEONLY
+        
         
 
        
