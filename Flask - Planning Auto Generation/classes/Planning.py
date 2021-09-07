@@ -90,6 +90,7 @@ class Planning:
                 cour["endMin"] = position["endMin"]
                 cour["requirement"] = position["subrequirement"]
                 cour["prof"] = position["user"]
+                cour["day"] = position["day"]
                 self.days[position["day"]].append(cour)
                 self.Restricted_days[position["day"]].append({"startH" : position["startH"], "endH" : position["endH"] ,
                                         "startMin" : position["startMin"], "endMin" : position["endMin"] })     
