@@ -2,9 +2,23 @@ const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, 
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
-
+ function compare( a, b ) {
+        if ( a.startH < b.startH ){
+          return -1;
+        }
+        if ( a.startH > b.startH ){
+          return 1;
+        } 
+        else if ( a.startMin < b.startMin ){
+            return -1;
+          }
+          if ( a.startMin > b.startMin ){
+            return 1;
+          }
+        return 0;
+      }
 var ControllerFunctions = {
-
+   
     addProf: async (req, res) => {
         try {
 
@@ -81,28 +95,28 @@ var ControllerFunctions = {
             const body = req.body;
 
 
-            const exist = await Plannings.findOne({where : { groupId : body.group , semesterId : body.semester}})
+            const exist = await Plannings.findOne({ where: { groupId: body.group, semesterId: body.semester } })
 
-            if( ! exist) {
+            if (!exist) {
                 const group = await Groups.findOne({ where: { id: body.group } })
-                const section = await Sections.findOne({ where: { id: group.sectionId } , include : {model : Years , required: true}})
-               
-               
-    
+                const section = await Sections.findOne({ where: { id: group.sectionId }, include: { model: Years, required: true } })
+
+
+
                 const result = await Groups.findAll({ where: { sectionId: section.id }, attributes: ['id'] })
-                    var ids = [];
-                    result.map((element) => {
-                        ids.push(element.id)
-                    })
-                   
-                const semesters = await Semesters.findAll({ where: { name : {[Op.like]:  '%1%'} }, attributes: ['id'] })
-    
-                    var id_semesters = [];
-                    
-                    semesters.map((element) => {
-                        id_semesters.push(element.id)
-                    })
-    
+                var ids = [];
+                result.map((element) => {
+                    ids.push(element.id)
+                })
+
+                const semesters = await Semesters.findAll({ where: { name: { [Op.like]: '%1%' } }, attributes: ['id'] })
+
+                var id_semesters = [];
+
+                semesters.map((element) => {
+                    id_semesters.push(element.id)
+                })
+
                 const cours = await Cours.findAll({
                     include: [{
                         model: Modules,
@@ -121,11 +135,11 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1  ,
-                                        semesterId :  { [Op.in]: id_semesters }
-            
+                                        auto: 1,
+                                        semesterId: { [Op.in]: id_semesters }
+
                                     },
-                                    
+
                                 },
                             },
                             {
@@ -135,10 +149,10 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1  ,
-                                        semesterId :  { [Op.in]: id_semesters }
+                                        auto: 1,
+                                        semesterId: { [Op.in]: id_semesters }
                                     },
-                                    
+
                                 },
                             }]
                         }
@@ -149,12 +163,12 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1  ,
-                                groupId : { [Op.in]: ids },
-                                semesterId :  { [Op.in]: id_semesters }
-    
+                                auto: 1,
+                                groupId: { [Op.in]: ids },
+                                semesterId: { [Op.in]: id_semesters }
+
                             },
-                            
+
                         },
                         {
                             model: Users,
@@ -165,9 +179,9 @@ var ControllerFunctions = {
                             required: true,
                         }]
                     }]
-    
+
                 })
-    
+
                 const tdps = await TDP.findAll({
                     include: [{
                         model: Modules,
@@ -226,40 +240,46 @@ var ControllerFunctions = {
                     }
                     ]
                 })
-    
+
                 res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
-    
+
                 axios.post('http://127.0.0.1:4001/make_planning',
                     { cours: cours, tdps: tdps, profs: profs, requirements: requirements }
                 )
-                    .then( async function (response) {
-                        
+                    .then(async function (response) {
 
-                        const planning= await Plannings.create({ auto: 1 ,groupId: group.id, name: "Planning "+section.year.name +"- " + section.name +" "
-                        + group.name ,semesterId : body.semester})
-                        for(let i= 0 ; i< response.data.length ;i++) {
-                        for(let j= 0 ; j< response.data[i].length ;j++) {
-                         if(response.data[i][j].type ==  0)
-                            await PositionsCours.create({ userId: response.data[i][j].prof.user.id, planningId: planning.id, day : response.data[i][j].day,
-                                startH : response.data[i][j].startH , startMin : response.data[i][j].startMin , endH:response.data[i][j].endH ,endMin :response.data[i][j].endMin 
-                                , courId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id })
-                        else 
-                             await Positions.create({ userId: response.data[i][j].prof.user.id, planningId: planning.id, day : response.data[i][j].day,
-                                startH : response.data[i][j].startH , startMin : response.data[i][j].startMin , endH:response.data[i][j].endH ,endMin :response.data[i][j].endMin 
-                                , tdpId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id })
-                                
-                               
+
+                        const planning = await Plannings.create({
+                            auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
+                                + group.name, semesterId: body.semester
+                        })
+                        for (let i = 0; i < response.data.length; i++) {
+                            for (let j = 0; j < response.data[i].length; j++) {
+                                if (response.data[i][j].type == 0)
+                                    await PositionsCours.create({
+                                        userId: response.data[i][j].prof.user.id, planningId: planning.id, day: response.data[i][j].day,
+                                        startH: response.data[i][j].startH, startMin: response.data[i][j].startMin, endH: response.data[i][j].endH, endMin: response.data[i][j].endMin
+                                        , courId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id
+                                    })
+                                else
+                                    await Positions.create({
+                                        userId: response.data[i][j].prof.user.id, planningId: planning.id, day: response.data[i][j].day,
+                                        startH: response.data[i][j].startH, startMin: response.data[i][j].startMin, endH: response.data[i][j].endH, endMin: response.data[i][j].endMin
+                                        , tdpId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id
+                                    })
+
+
+                            }
                         }
-                    }
                     })
                     .catch(function (error) {
                         console.log(error)
                     });
             }
             else {
-                 res.status(400).json({ error: "Ce groupe a déja un planning." })
+                res.status(400).json({ error: "Ce groupe a déja un planning." })
             }
-            
+
 
         }
         catch (err) {
@@ -502,14 +522,94 @@ var ControllerFunctions = {
     },
     getPlannings: async (req, res) => {
         try {
-            const semesters = await Semesters.findAll({ where: { yearId :req.body.yearId }, attributes: ['id'] })
+            const semesters = await Semesters.findAll({ where: { yearId: req.body.yearId }, attributes: ['id'] })
             var id_semesters = [];
-            
+
             semesters.map((element) => {
                 id_semesters.push(element.id)
             })
-            const plannings = await Plannings.findAll({ where: { semesterId: { [Op.in] : id_semesters} } })
+            const plannings = await Plannings.findAll({ where: { semesterId: { [Op.in]: id_semesters } } })
             res.status(200).json(plannings)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getPlanning: async (req, res) => {
+        try {
+            const days = [[], [], [], [], [], [], []]
+            const planning = await Plannings.findOne({
+                where: { id: req.body.planningId }, include: [
+                  
+                   {
+                        model: Positions,
+                        required: true,
+                        include: [
+                            {
+                                model: TDP,
+                                required: true
+                            },
+                            {
+                                model: SubRequirements,
+                                required: true
+                            },
+                            {
+                                model: Users,
+                                required: true
+                            }
+                        ]
+                    },
+                    {
+                        model: PositionsCours,
+                        required: true,
+                        include: [
+                            {
+                                model: Cours,
+                                required: true
+                            },
+                            {
+                                model: SubRequirements,
+                                required: true
+                            },
+                            {
+                                model: Users,
+                                required: true
+                            }
+                        ]
+                    }
+                ]
+            })
+            console.log("*----------------------------------------------------------*")
+          
+            for ( var i = 0 ; i < planning.positions.length;i++) {
+                console.log("Position : " +planning.positions[i].tdp.name)
+                days[planning.positions[i].day].push({
+                    startH : planning.positions[i].startH ,
+                    endH :planning.positions[i].endH ,
+                    startMin :planning.positions[i].startMin ,
+                    endMin:planning.positions[i].endMin ,
+                    requirement :planning.positions[i].subrequirement.name ,
+                    name : planning.positions[i].tdp.name,
+                    prof : planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname
+                })
+            }
+            for ( var i = 0 ; i < planning.positionscours.length;i++) {
+                console.log("Position Cours : " +planning.positionscours[i].cour.name)
+                days[planning.positionscours[i].day].push({
+                    startH : planning.positionscours[i].startH ,
+                    endH :planning.positionscours[i].endH ,
+                    startMin :planning.positionscours[i].startMin ,
+                    endMin:planning.positionscours[i].endMin ,
+                    requirement :planning.positionscours[i].subrequirement.name ,
+                    name : planning.positionscours[i].cour.name,
+                    prof : planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname
+
+                })
+            }
+            for(let i = 0 ;i< 7 ;i++)
+            days[i].sort(compare)
+            res.status(200).json(days)
         }
         catch (err) {
             console.log(err)
