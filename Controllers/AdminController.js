@@ -96,13 +96,11 @@ var ControllerFunctions = {
             const body = req.body;
 
 
-            const exist = await Plannings.findOne({ where: { groupId: body.group, semesterId: body.semester } })
+           const exist = await Plannings.findOne({ where: { groupId: body.group, semesterId: body.semester } })
 
             if (!exist) {
                 const group = await Groups.findOne({ where: { id: body.group } })
                 const section = await Sections.findOne({ where: { id: group.sectionId }, include: { model: Years, required: true } })
-
-
 
                 const result = await Groups.findAll({ where: { sectionId: section.id }, attributes: ['id'] })
                 var ids = [];
@@ -241,45 +239,49 @@ var ControllerFunctions = {
                     }
                     ]
                 })
-
-                res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
+              
+              res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
 
                 axios.post('http://127.0.0.1:4001/make_planning',
                     { cours: cours, tdps: tdps, profs: profs, requirements: requirements }
                 )
                     .then(async function (response) {
-
-
-                        const planning = await Plannings.create({
+                     const planning = await Plannings.create({
                             auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
                                 + group.name, semesterId: body.semester
                         })
                         for (let i = 0; i < response.data.length; i++) {
-                            for (let j = 0; j < response.data[i].length; j++) {
-                                if (response.data[i][j].type == 0)
+                           
+                                if (response.data[i].type == 0) {
+                                    console.log("user : "+response.data[i].prof.user.id)
+                                    console.log("planning : " + response.data[i].prof.user.id)
                                     await PositionsCours.create({
-                                        userId: response.data[i][j].prof.user.id, planningId: planning.id, day: response.data[i][j].day,
-                                        startH: response.data[i][j].startH, startMin: response.data[i][j].startMin, endH: response.data[i][j].endH, endMin: response.data[i][j].endMin
-                                        , courId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id
+                                        userId: response.data[i].prof.user.id, planningId: planning.id, day: response.data[i].day,
+                                        startH: response.data[i].startH, startMin: response.data[i].startMin, endH: response.data[i].endH, endMin: response.data[i].endMin
+                                        , courId: response.data[i].id, subrequirementId: response.data[i].requirement.id
                                     })
-                                else
+                                }
+                                else {
+                                  
                                     await Positions.create({
-                                        userId: response.data[i][j].prof.user.id, planningId: planning.id, day: response.data[i][j].day,
-                                        startH: response.data[i][j].startH, startMin: response.data[i][j].startMin, endH: response.data[i][j].endH, endMin: response.data[i][j].endMin
-                                        , tdpId: response.data[i][j].id, subrequirementId: response.data[i][j].requirement.id
+                                        userId: response.data[i].prof.user.id, planningId: planning.id, day: response.data[i].day,
+                                        startH: response.data[i].startH, startMin: response.data[i].startMin, endH: response.data[i].endH, endMin: response.data[i].endMin
+                                        , tdpId: response.data[i].id, subrequirementId: response.data[i].requirement.id
                                     })
 
+                                }
+                                   
 
-                            }
+                            
                         }
                     })
                     .catch(function (error) {
-                        console.log(error)
+                      console.log(error)
                     });
-            }
-            else {
-                res.status(400).json({ error: "Ce groupe a déja un planning." })
-            }
+          }
+          else {
+             res.status(400).json({ error: "Ce groupe a déja un planning." })
+             }
 
 
         }
@@ -545,7 +547,7 @@ var ControllerFunctions = {
                   
                    {
                         model: Positions,
-                        required: true,
+                        required: false,
                         include: [
                             {
                                 model: TDP,
@@ -563,7 +565,7 @@ var ControllerFunctions = {
                     },
                     {
                         model: PositionsCours,
-                        required: true,
+                        required: false,
                         include: [
                             {
                                 model: Cours,
@@ -581,7 +583,7 @@ var ControllerFunctions = {
                     }
                 ]
             })
-            console.log("*----------------------------------------------------------*")
+            console.log(planning)
           
             for ( var i = 0 ; i < planning.positions.length;i++) {
                 console.log("Position : " +planning.positions[i].tdp.name)
@@ -618,8 +620,7 @@ var ControllerFunctions = {
             }
             for(let i = 0 ;i< 7 ;i++)
             days[i].sort(compare)
-            res.status(200).json({days : days ,
-                    name : planning.name})
+            res.status(200).json({days : days , name : planning.name})
         }
         catch (err) {
             console.log(err)

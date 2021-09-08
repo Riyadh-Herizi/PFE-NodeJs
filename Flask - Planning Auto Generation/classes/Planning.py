@@ -46,7 +46,7 @@ class Planning:
             return False
         
     def get_next_time(self,day,element):
-        print("Day : ------------------ " , day )
+        print("THIS IS THE OVERLAPPED TIME")
         print(self.interval_intersect((self.current_time[day]["startH"]+self.current_time[day]["startMin"]/60,self.current_time[day]["startH"]+element["hour"] +
                 element["min"]/60),(12.10,13.59)))
         current= self.current_time[day]
@@ -135,8 +135,7 @@ class Planning:
                 max_iteration = 100
                 result = False
                 mutation_counter = 0
-                
-                
+               
     def set_time(self):
         self.current_time = [ {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},
                  {"startH" : 8,"startMin" : 0}, {"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0},{"startH" : 8,"startMin" : 0}] 
@@ -393,7 +392,6 @@ class Planning:
 
     def getRandomRequirement(self,session) :
         reqs = []
-
         for requirement in self.requirements.requirements :
             if requirement["requirementId"] == session["requirementId"] :
                 reqs.append(requirement)
@@ -405,9 +403,7 @@ class Planning:
     def getRandomProf(self,session) :
         profs = []
         if session["type"] == 0 :
-            print("********************************")
-            print(session)
-            print("********************************")
+            
             for prof in session["repsonsables"] :
                 profs.append(prof)
             if len(profs) > 0  :

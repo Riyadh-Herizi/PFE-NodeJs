@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
-from classes.Planning import Planning
+from classes.GeneticAlgorithm import GeneticAlgorithm
 from classes.Cours import Cours
 from classes.Requirements import Requirements
 from classes.TDPs import TDPs
@@ -16,9 +16,12 @@ def make_planning():
      profs = content["profs"]
      tdps = content["tdps"]
      requirements = content["requirements"]
-     planning = Planning(Cours(cours),TDPs(tdps),Profs(profs),Requirements(requirements))
-     planning.start_generating()
-     return jsonify(planning.days)
+     planning = GeneticAlgorithm(Cours(cours),TDPs(tdps),Profs(profs),Requirements(requirements))
+     planning.temp_planning= []
+     planning.population = []
+     planning.sessions= []
+     planning.generate_planning()
+     return jsonify(planning.temp_planning)
 
 # To setup Flask use : 
 # 1- Install python >= 3.6 before using flask and make sure that you have the path added on your system 
