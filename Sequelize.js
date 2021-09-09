@@ -115,7 +115,7 @@ Positions.belongsTo(SubRequirements)
 
 Semesters.hasMany(Plannings)
 Plannings.belongsTo(Semesters)
-sequelize.sync({ force: false })
+sequelize.sync({ force: true })
     .then(async () => {
         // VERIEFING THE CONNECTION 
         try {
@@ -292,8 +292,8 @@ sequelize.sync({ force: false })
                 // Algo
                 await Responsables.create({ userId: n_simohamed.id, courId: algo1_cour.id })
                 await ResponsablesTDP.create({ userId: n_simohamed.id, tdpId: algo1_td.id })
-                await ResponsablesTDP.create({ userId: l_allal.id, tdpId: archi1_td.id })
-                await ResponsablesTDP.create({ userId: n_keskes.id, tdpId: archi1_td.id })
+                await ResponsablesTDP.create({ userId: l_allal.id, tdpId: algo1_td.id })
+                await ResponsablesTDP.create({ userId: n_keskes.id, tdpId: algo1_td.id })
                 await ResponsablesTDP.create({ userId: n_keskes.id, tdpId: algo1_tp.id })
                 await ResponsablesTDP.create({ userId: l_allal.id, tdpId: algo1_tp.id })
 

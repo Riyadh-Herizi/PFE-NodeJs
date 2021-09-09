@@ -20,8 +20,11 @@ def make_planning():
      planning.temp_planning= []
      planning.population = []
      planning.sessions= []
+     planning.plannings= []
      planning.generate_planning()
-     return jsonify(planning.temp_planning)
+     if len(planning.plannings) == 0 : 
+          return jsonify([])
+     return jsonify(planning.plannings[0])
 
 # To setup Flask use : 
 # 1- Install python >= 3.6 before using flask and make sure that you have the path added on your system 

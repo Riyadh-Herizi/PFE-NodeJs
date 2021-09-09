@@ -3,23 +3,23 @@ const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
 const Planning = require("../Models/Planning");
- function compare( a, b ) {
-        if ( a.startH < b.startH ){
-          return -1;
-        }
-        if ( a.startH > b.startH ){
-          return 1;
-        } 
-        else if ( a.startMin < b.startMin ){
-            return -1;
-          }
-          if ( a.startMin > b.startMin ){
-            return 1;
-          }
-        return 0;
-      }
+function compare(a, b) {
+    if (a.startH < b.startH) {
+        return -1;
+    }
+    if (a.startH > b.startH) {
+        return 1;
+    }
+    else if (a.startMin < b.startMin) {
+        return -1;
+    }
+    if (a.startMin > b.startMin) {
+        return 1;
+    }
+    return 0;
+}
 var ControllerFunctions = {
-   
+
     addProf: async (req, res) => {
         try {
 
@@ -96,7 +96,7 @@ var ControllerFunctions = {
             const body = req.body;
 
 
-           const exist = await Plannings.findOne({ where: { groupId: body.group, semesterId: body.semester } })
+            const exist = await Plannings.findOne({ where: { groupId: body.group, semesterId: body.semester } })
 
             if (!exist) {
                 const group = await Groups.findOne({ where: { id: body.group } })
@@ -239,21 +239,29 @@ var ControllerFunctions = {
                     }
                     ]
                 })
-              
-              res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
+
+                res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
 
                 axios.post('http://127.0.0.1:4001/make_planning',
                     { cours: cours, tdps: tdps, profs: profs, requirements: requirements }
                 )
                     .then(async function (response) {
-                     const planning = await Plannings.create({
-                            auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
-                                + group.name, semesterId: body.semester
-                        })
-                        for (let i = 0; i < response.data.length; i++) {
-                           
+                        if (response.data.length == 0) {
+
+                        console.log("planning vide ")
+
+                        }
+                        else {
+                            const planning = await Plannings.create({
+                                auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
+                                    + group.name, semesterId: body.semester
+                            })
+
+
+                            for (let i = 0; i < response.data.length; i++) {
+
                                 if (response.data[i].type == 0) {
-                                    console.log("user : "+response.data[i].prof.user.id)
+                                    console.log("user : " + response.data[i].prof.user.id)
                                     console.log("planning : " + response.data[i].prof.user.id)
                                     await PositionsCours.create({
                                         userId: response.data[i].prof.user.id, planningId: planning.id, day: response.data[i].day,
@@ -262,7 +270,7 @@ var ControllerFunctions = {
                                     })
                                 }
                                 else {
-                                  
+
                                     await Positions.create({
                                         userId: response.data[i].prof.user.id, planningId: planning.id, day: response.data[i].day,
                                         startH: response.data[i].startH, startMin: response.data[i].startMin, endH: response.data[i].endH, endMin: response.data[i].endMin
@@ -270,18 +278,21 @@ var ControllerFunctions = {
                                     })
 
                                 }
-                                   
 
-                            
+
+
+                            }
+
                         }
+
                     })
                     .catch(function (error) {
-                      console.log(error)
+                        console.log(error)
                     });
-          }
-          else {
-             res.status(400).json({ error: "Ce groupe a déja un planning." })
-             }
+            }
+            else {
+                res.status(400).json({ error: "Ce groupe a déja un planning." })
+            }
 
 
         }
@@ -544,8 +555,8 @@ var ControllerFunctions = {
             const days = [[], [], [], [], [], [], []]
             const planning = await Plannings.findOne({
                 where: { id: req.body.planningId }, include: [
-                  
-                   {
+
+                    {
                         model: Positions,
                         required: false,
                         include: [
@@ -584,43 +595,45 @@ var ControllerFunctions = {
                 ]
             })
             console.log(planning)
-          
-            for ( var i = 0 ; i < planning.positions.length;i++) {
-                console.log("Position : " +planning.positions[i].tdp.name)
-                console.log("Time start : " +planning.positions[i].startH + ":"+planning.positions[i].startMin )
-                console.log("Time end : " +planning.positions[i].endH + ":"+planning.positions[i].endMin )
-                console.log("Salle : " +planning.positions[i].subrequirement.name  )
-                console.log("Prof : " +planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname  )
+
+            for (var i = 0; i < planning.positions.length; i++) {
+                console.log("Position : " + planning.positions[i].tdp.name)
+                console.log("Time start : " + planning.positions[i].startH + ":" + planning.positions[i].startMin)
+                console.log("Time end : " + planning.positions[i].endH + ":" + planning.positions[i].endMin)
+                console.log("Salle : " + planning.positions[i].subrequirement.name)
+                console.log("day : " + planning.positions[i].day)
+                console.log("Prof : " + planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname)
                 days[planning.positions[i].day].push({
-                    startH : planning.positions[i].startH ,
-                    endH :planning.positions[i].endH ,
-                    startMin :planning.positions[i].startMin ,
-                    endMin:planning.positions[i].endMin ,
-                    requirement :planning.positions[i].subrequirement.name ,
-                    name : planning.positions[i].tdp.name,
-                    prof : planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname
+                    startH: planning.positions[i].startH,
+                    endH: planning.positions[i].endH,
+                    startMin: planning.positions[i].startMin,
+                    endMin: planning.positions[i].endMin,
+                    requirement: planning.positions[i].subrequirement.name,
+                    name: planning.positions[i].tdp.name,
+                    prof: planning.positions[i].user.firstname + " " + planning.positions[i].user.lastname
                 })
             }
-            for ( var i = 0 ; i < planning.positionscours.length;i++) {
-                console.log("Position : " +planning.positionscours[i].cour.name)
-                console.log("Time start : " +planning.positionscours[i].startH + ":"+planning.positionscours[i].startMin )
-                console.log("Time end : " +planning.positionscours[i].endH + ":"+planning.positionscours[i].endMin )
-                console.log("Salle : " +planning.positionscours[i].subrequirement.name  )
-                console.log("Prof : " +planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname  )
+            for (var i = 0; i < planning.positionscours.length; i++) {
+                console.log("Position : " + planning.positionscours[i].cour.name)
+                console.log("Time start : " + planning.positionscours[i].startH + ":" + planning.positionscours[i].startMin)
+                console.log("Time end : " + planning.positionscours[i].endH + ":" + planning.positionscours[i].endMin)
+                console.log("Salle : " + planning.positionscours[i].subrequirement.name)
+                console.log("day : " + planning.positionscours[i].day)
+                console.log("Prof : " + planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname)
                 days[planning.positionscours[i].day].push({
-                    startH : planning.positionscours[i].startH ,
-                    endH :planning.positionscours[i].endH ,
-                    startMin :planning.positionscours[i].startMin ,
-                    endMin:planning.positionscours[i].endMin ,
-                    requirement :planning.positionscours[i].subrequirement.name ,
-                    name : planning.positionscours[i].cour.name,
-                    prof : planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname
+                    startH: planning.positionscours[i].startH,
+                    endH: planning.positionscours[i].endH,
+                    startMin: planning.positionscours[i].startMin,
+                    endMin: planning.positionscours[i].endMin,
+                    requirement: planning.positionscours[i].subrequirement.name,
+                    name: planning.positionscours[i].cour.name,
+                    prof: planning.positionscours[i].user.firstname + " " + planning.positionscours[i].user.lastname
 
                 })
             }
-            for(let i = 0 ;i< 7 ;i++)
-            days[i].sort(compare)
-            res.status(200).json({days : days , name : planning.name})
+            for (let i = 0; i < 7; i++)
+                days[i].sort(compare)
+            res.status(200).json({ days: days, name: planning.name })
         }
         catch (err) {
             console.log(err)
