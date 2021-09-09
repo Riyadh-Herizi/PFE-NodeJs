@@ -11,7 +11,7 @@ class GeneticAlgorithm:
     POPULATION_NUMBER = 100
     FITNESS_REQUIREMENT = 2
     MAX_ETIRATIONS = 1000
-    MAX_ETIRATIONS_FOR_MUTATION = 100
+    MAX_ETIRATIONS_FOR_MUTATION = 50
     # Hard constraints
     allowed_time = [0, 7, 7, 5, 7, 7, 0]
     init_population_count = 0
@@ -73,7 +73,7 @@ class GeneticAlgorithm:
                 # Init population
                 self.initial_population()
                 self.ordred_population = []
-                self.ordred_population = sorted(self.population, key=lambda x: ( x['name'], x['startH'] , x['startMin'], x['hour'], x['day'] ),reverse=False)
+                self.ordred_population = sorted(self.population, key=lambda x: (  x['startH'] , x['startMin'], x['hour'], x['day'] ),reverse=False)
                 counter = self.MAX_ETIRATIONS
                 mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
                 while counter > 0 :
@@ -83,8 +83,8 @@ class GeneticAlgorithm:
                     if valide :
                         mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
                         
-                    else :     
-                        mutation_counter-=1
+                         
+                    mutation_counter-=1
 
                     if mutation_counter == 0 :
                         self.execute_mutation() 
@@ -151,15 +151,20 @@ class GeneticAlgorithm:
 
     def check_requirement(self,element):
         salle = element["requirement"] 
-        for use in salle["positions"] :
-            if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
-            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
-                return 0
-                
-        for use in salle["positionscours"] :
-            if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
-            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
-                return 0      
+        
+        if salle != None :
+            for use in salle["positions"] :
+                if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
+                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                    return 0
+                    
+            for use in salle["positionscours"] :
+                if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
+                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                    return 0   
+        else :
+            print(salle)
+            print(element["name"])
         return 1
 
     def check_add_for_planning_temp(self,element):
@@ -193,6 +198,7 @@ class GeneticAlgorithm:
     def execute_crossover (self):
         self.ordred_population =  sorted(self.ordred_population, key=lambda x: ( x['fitness'] ),reverse=False)
         elements = []
+        self.saved_population = []
         for i in range(len(self.ordred_population)) :
             if self.ordred_population[i]["fitness"] == 0 :
                 self.saved_population.append(self.ordred_population[i].copy())
@@ -201,11 +207,10 @@ class GeneticAlgorithm:
         for i in elements :
            self.ordred_population.pop(i)         
         
-        stop_index = int(round(len(self.ordred_population) * 0.2 ))
+        stop_index = int(round(len(self.ordred_population) * 0.5 ))
         new_list = []
         for i in range(stop_index) :
             new_list.append(self.ordred_population[i].copy())
-        print("init  : ",self.init_population_count," || saved  : ",len(self.saved_population)," || ordred : ",len(self.ordred_population)," ||  stop : ",stop_index)   
         self.ordred_population = []
         self.ordred_population = new_list.copy()
 
@@ -226,8 +231,27 @@ class GeneticAlgorithm:
                     kid2["endMin"] = element2["startMin"] + kid2["min"]
                     kids.append(kid2.copy())
         self.ordred_population = []
+
+        print("-----------------------------------------------")
+        print("element coupling: " , len(new_list) )
+        print("kids number : " , len(kids) )
+        print("saved number : " , len(self.saved_population) )
         for element in self.saved_population :
             self.ordred_population.append(element.copy())
+        
+        elements_count = 0
+        for element in kids :
+            if not element in self.ordred_population :
+                elements_count+=1
+                self.ordred_population.append(element.copy())
+            if elements_count == 1000 :
+                break
+        kids = []
+        print("new ordred number : " , len(self.ordred_population) )
+        self.ordred_population = sorted(self.ordred_population, key=lambda x: ( x['startH'] , x['startMin'], x['hour'], x['day'] ),reverse=False)
+        for session in self.sessions :
+            if session["keep"] and session["type"] == 0 :
+                self.temp_planning.append(session.copy())
 
 
         
@@ -240,11 +264,15 @@ class GeneticAlgorithm:
 
 
     def execute_mutation(self):
-        pass
-
-    def fitness(self):
-        pass
-
+        print("MUTAION rani hna hhhhhhh wtfff")
+        for i in range(100) :
+            index = random.randint(0 , len(self.ordred_population) -1 )
+            self.ordred_population[index]["prof"] = self.random_prof(self.ordred_population[index]["type"],self.ordred_population[index]["id"])
+            self.ordred_population[index]["requirement"] = self.random_requirement(self.ordred_population[index]["requirementId"])
+            self.ordred_population[index]["startH"] = self.random_time(self.ordred_population[index]["hour"],self.ordred_population[index]["day"])
+            self.ordred_population[index]["endH"] = self.ordred_population[index]["startH"] +self.ordred_population[index]["hour"]
+            
+            #change module
     def random_day(self):
         return  random.randint(1,5)  
 
@@ -279,6 +307,7 @@ class GeneticAlgorithm:
         for requirement in self.requirements.requirements :
             if requirement["requirementId"] == id :
                 reqs.append(requirement)
+        
         if len(reqs) > 0  :
             return reqs[random.randint(0,len(reqs) -1)]  
         else :
@@ -294,10 +323,8 @@ class GeneticAlgorithm:
         else :
             while (number == 12 and hour > 1 )  or number == 13 or (hour > 1  and number == 16  )  :
                     number = random.randint(8,16)
-        
 
-        return number
-           
+        return number       
     def check_if_exist_in_population(self,element):
         if element in self.population : 
             return  True
