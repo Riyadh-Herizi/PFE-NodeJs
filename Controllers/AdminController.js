@@ -48,6 +48,53 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    updateProf: async (req, res) => {
+        try {
+
+            const body = req.body;
+            if (!(body.username  && body.type && body.firstname && body.lastname && body.email)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const existEmail = await Users.findOne({ where: { email: body.email , id : { [Op.ne] :body.id}} })
+            const existUsername = await Users.findOne({ where: { username: body.username , id : { [Op.ne] :body.id}} })
+            if (existEmail || existUsername) {
+                if (existUsername)
+                    res.status(400).send({ error: "Nom d'utilisateur est occupé par un autre utilisateur" });
+                else
+                    res.status(400).send({ error: "Email est occupé par un autre utilisateur" });
+
+            }
+            else {
+            
+                await Users.update({ firstname: body.firstname, lastname: body.lastname, username: body.username ,type: body.type, email: body.email },
+                    {where : {id : body.id }})
+               
+              res.status(200).send()
+            }
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteProf: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const positions = await Positions.findAll({where : {userId : body.id}})
+            const positionscours = await PositionsCours.findAll({where : {userId : body.id}})
+            if ( positions.length || positionscours.length ) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer cet enseignant a cause de sa participation aux plannings" });
+            }
+            await Users.destroy({ where:  {id : body.id } });
+            res.status(200).send()
+            
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     addModule: async (req, res) => {
         try {
             const body = req.body.module;
