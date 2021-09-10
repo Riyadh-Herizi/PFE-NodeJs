@@ -13,6 +13,10 @@ module.exports = (sequelize, type) => {
             type: type.INTEGER, 
             defaultValue: 0
         }, 
+        status :{
+            type: type.INTEGER, 
+            defaultValue: 0
+        }, 
         
         
 

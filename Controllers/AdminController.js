@@ -134,7 +134,7 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1,
+                                        auto: 1, statut : 1 ,
                                         semesterId: { [Op.in]: id_semesters }
 
                                     },
@@ -148,7 +148,7 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1,
+                                        auto: 1, statut : 1,
                                         semesterId: { [Op.in]: id_semesters }
                                     },
 
@@ -162,7 +162,7 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1,
+                                auto: 1, statut : 1,
                                 groupId: { [Op.in]: ids },
                                 semesterId: { [Op.in]: id_semesters }
 
@@ -222,7 +222,7 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1
+                                auto: 1 , statut : 1
                             }
                         }
                     },
@@ -233,13 +233,17 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1
+                                auto: 1, statut : 1
                             }
                         }
                     }
                     ]
                 })
 
+                const planning = await Plannings.create({
+                                auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
+                                    + group.name, semesterId: body.semester , statut : 0
+                            })
                 res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
 
                 axios.post('http://127.0.0.1:4001/make_planning',
@@ -247,15 +251,14 @@ var ControllerFunctions = {
                 )
                     .then(async function (response) {
                         if (response.data.length == 0) {
-
                         console.log("planning vide ")
-
+                        await Plannings.update(
+                            { statut : -1 },
+                            { where: { id: planning.id } }
+                          )
                         }
                         else {
-                            const planning = await Plannings.create({
-                                auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
-                                    + group.name, semesterId: body.semester
-                            })
+                           
 
 
                             for (let i = 0; i < response.data.length; i++) {
@@ -282,6 +285,10 @@ var ControllerFunctions = {
 
 
                             }
+                            await Plannings.update(
+                                { statut : 1 },
+                                { where: { id: planning.id } }
+                              )
 
                         }
 
