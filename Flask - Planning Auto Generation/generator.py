@@ -22,9 +22,6 @@ def make_planning():
      planning.sessions= []
      planning.plannings= []
      planning.generate_planning()
-     for element in planning.temp_planning :
-          print(element["name"])
-          print("-------------------------------------")
      if len(planning.plannings) == 0 : 
           return jsonify([])
      return jsonify(planning.plannings[0])

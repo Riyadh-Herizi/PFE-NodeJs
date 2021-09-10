@@ -1,7 +1,6 @@
 import random
 
-from flask import sessions
-
+import math
 
 class GeneticAlgorithm:
     # Grades
@@ -9,7 +8,7 @@ class GeneticAlgorithm:
     grades_tdp = {"MCA": 0, "MCB": 0,  "Pr": 0}
 
     POPULATION_NUMBER = 100
-    FITNESS_REQUIREMENT = 2
+    FITNESS_REQUIREMENT = 3
     MAX_ETIRATIONS = 1000
     MAX_ETIRATIONS_FOR_MUTATION = 50
     # Hard constraints
@@ -21,6 +20,7 @@ class GeneticAlgorithm:
     ordred_population = []
     temp_planning = []
     plannings = []
+
     def __init__(self, cours, tdps, profs, requirements):
         self.cours = cours
         self.tdps = tdps
@@ -48,7 +48,6 @@ class GeneticAlgorithm:
             sumMin = sumMin + element["min"]    
         return sumH + (sumMin / 60) 
 
-
     def generate_planning(self):
             required_time = self.sum_all()
             available_time = self.sum_available()
@@ -73,69 +72,69 @@ class GeneticAlgorithm:
                 # Init population
                 self.initial_population()
                 self.ordred_population = []
-                self.ordred_population = sorted(self.population, key=lambda x: (  x['startH'] , x['startMin'], x['hour'], x['day'] ),reverse=False)
+                self.ordred_population = sorted(self.population, key=lambda x: (  x['startH'] , x['startMin'] ),reverse=False)
+                valide = self.evalute_population() 
                 counter = self.MAX_ETIRATIONS
                 mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
                 while counter > 0 :
                     valide = self.evalute_population() 
-                   
-                    self.temp_planning = []   
                     if valide :
-                        mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
-                        
-                         
-                    mutation_counter-=1
-
-                    if mutation_counter == 0 :
-                        self.execute_mutation() 
-                        mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
-                    else :
-                        self.execute_crossover() 
-                    counter-=1
+                        break
+                    else :  
+                        mutation_counter-=1
+                        if mutation_counter == 0 :
+                            self.execute_mutation() 
+                            mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
+                        else :
+                            self.execute_crossover() 
+                        counter-=1
                 
-
     def initial_population(self):
         self.temp_planning = []
         self.population = []
         for session in self.sessions :
             if session["keep"] and session["type"] == 0 :
                 self.temp_planning.append(session)
-            else :
-                for i in range(self.POPULATION_NUMBER):
+            
+        for i in range(self.POPULATION_NUMBER):
+            for session in self.sessions :
+                if not session["keep"] :
                     session_copy = session.copy()
                     session_copy["requirement"] = self.random_requirement(session["requirementId"])
                     session_copy["prof"] = self.random_prof(session["type"] , session["id"] )
                     session_copy["day"] = self.random_day()
-                    session_copy["startH"] = self.random_time(session["hour"],session_copy["day"])
+                    session_copy["startH"] = self.random_time(session["hour"],session_copy["day"],session_copy["type"])
                     session_copy["startMin"] = 0 
                     session_copy["endH"] = session_copy["startH"] + session["hour"]
                     session_copy["endMin"] = session["min"]
-                    if not self.check_if_exist_in_population(session_copy) :
+                    if not session_copy  in self.population :
                         self.population.append(session_copy)
         
         self.init_population_count = len(self.population)
-       
+        print("--------------------------------------------------")
+        print("Population count : ", self.init_population_count) 
 
-                    
 
-                
     def evalute_population(self):
         for element in self.ordred_population :
             fitness_value = self.evalute_session(element)
             element["fitness"] = fitness_value
-            if fitness_value == 0 and self.check_add_for_planning_temp(element) :
+            if fitness_value == 0  :
                 self.temp_planning.append(element.copy())
-         
+        
         if len(self.temp_planning) == (len(self.cours.cours)+ len(self.tdps.tdps)) :
             self.plannings.append(self.temp_planning.copy())
             return True
         else: 
+            print('Planning length : ', len(self.temp_planning))
             return False
 
     def evalute_session(self , element):
-        fitness_value =  self.check_prof(element) + self.check_requirement(element) 
-    
-        return self.FITNESS_REQUIREMENT - fitness_value
+        req =  self.check_requirement(element)
+        prof =  self.check_prof(element)
+        check = self.check_add_for_planning_temp(element)
+        fitness_value = req + prof + check 
+        return  self.FITNESS_REQUIREMENT - fitness_value
 
     def check_prof(self,element):
         prof = element["prof"]["user"]
@@ -173,7 +172,7 @@ class GeneticAlgorithm:
         if sum_time <= self.allowed_time[element["day"]] :
             for session in self.temp_planning : 
                 if session["id"] == element["id"] and session["type"] == element["type"]:
-                    return False
+                    return 0
                 else :
                     can_be_added = self.interval_intersect((element["startH"]+element["startMin"]/60,element["endH"]+element["endMin"]/60),
                     (session["startH"]+session["startMin"]/60,session["endH"]+session["endMin"]/60))
@@ -183,12 +182,10 @@ class GeneticAlgorithm:
                         if can_be_added == 0 :
                             continue
                         else :
-                            return False
+                            return 0
         else :
-            return False        
-                            
-
-        return True
+            return 0        
+        return 1
 
     def interval_intersect(self,a,b):
         a0,a1 = a
@@ -196,27 +193,42 @@ class GeneticAlgorithm:
         return max(0,min(a1,b1)-max(a0,b0))
     
     def execute_crossover (self):
-        self.ordred_population =  sorted(self.ordred_population, key=lambda x: ( x['fitness'] ),reverse=False)
-        elements = []
+        print("--------------------------------------------------")
+        print("Applying crossover : " , len(self.ordred_population))
+        #--------------------------------------------------------------------------------------------
+        exist = []
+        for element in self.ordred_population :
+            if element["name"] not in exist :
+                print(element["name"])
+                exist.append(element["name"])
+        #--------------------------------------------------------------------------------------------
         self.saved_population = []
-        for i in range(len(self.ordred_population)) :
-            if self.ordred_population[i]["fitness"] == 0 :
-                self.saved_population.append(self.ordred_population[i].copy())
-                elements.append(i)
-        elements.sort(reverse=True)
-        for i in elements :
-           self.ordred_population.pop(i)         
-        
-        stop_index = int(round(len(self.ordred_population) * 0.5 ))
-        new_list = []
-        for i in range(stop_index) :
-            new_list.append(self.ordred_population[i].copy())
-        self.ordred_population = []
-        self.ordred_population = new_list.copy()
-
+        self.crossover_elements = []
+        self.ordred_population =  sorted(self.ordred_population, key=lambda x: ( x["fitness"] ),reverse=False)
+        for element in self.temp_planning :
+            if "keep" in element :
+                if not element["keep"] :
+                    self.saved_population.append(element.copy())
+            else :
+                self.saved_population.append(element.copy())
+        #--------------------------------------------------------------------------------------------
+        stop_index = int(round(math.sqrt(len(self.ordred_population) / 3)  ))
+        count = 0
+        for element in self.ordred_population :
+            if count < stop_index : 
+                if element["fitness"] != 0 and element["fitness"] != self.FITNESS_REQUIREMENT  :
+                    self.crossover_elements.append(element.copy())
+                    count= count + 1
+            else :
+                break
+        print("stop index : " , stop_index)
+        print("saved elements : " , len(self.saved_population))
+        print("crossover elements : " , len(self.crossover_elements))
+        print("copied elemets")  
+        #--------------------------------------------------------------------------------------------      
         kids = []
-        for element1 in  self.ordred_population :
-            for element2 in  self.ordred_population :
+        for element1 in  self.crossover_elements :
+            for element2 in  self.crossover_elements :
                 kid = element1.copy()
                 kid1 = element1.copy()
                 kid2 = element1.copy()
@@ -230,49 +242,43 @@ class GeneticAlgorithm:
                     kid2["endH"] = element2["startH"] + kid2["hour"]
                     kid2["endMin"] = element2["startMin"] + kid2["min"]
                     kids.append(kid2.copy())
+        print("new population mumbers : ",len(kids)) 
+        #-------------------------------------------------------------------------------------------- 
         self.ordred_population = []
-
-        print("-----------------------------------------------")
-        print("element coupling: " , len(new_list) )
-        print("kids number : " , len(kids) )
-        print("saved number : " , len(self.saved_population) )
+        for element in kids :
+            if not element in self.ordred_population and not element in self.saved_population :
+                self.ordred_population.append(element.copy())
         for element in self.saved_population :
             self.ordred_population.append(element.copy())
-        
-        elements_count = 0
-        for element in kids :
-            if not element in self.ordred_population :
-                elements_count+=1
-                self.ordred_population.append(element.copy())
-            if elements_count == 1000 :
-                break
-        kids = []
-        print("new ordred number : " , len(self.ordred_population) )
-        self.ordred_population = sorted(self.ordred_population, key=lambda x: ( x['startH'] , x['startMin'], x['hour'], x['day'] ),reverse=False)
+        print("new population count : ",len(self.ordred_population))
+        #-------------------------------------------------------------------------------------------- 
+        self.temp_planning = []
         for session in self.sessions :
             if session["keep"] and session["type"] == 0 :
                 self.temp_planning.append(session.copy())
-
-
+        print("cours copied : ",len(self.temp_planning))
+        #--------------------------------------------------------------------------------------------   
+        random.shuffle(self.ordred_population)
+        self.ordred_population = sorted(self.ordred_population, key=lambda x: ( x['startH'] , x['startMin'], x['hour'] ),reverse=True)
         
 
+    def execute_mutation(self): 
+        print("Mutation call")
+        for element in self.cours.cours : 
+            self.random_non_exist(element,0)
+
+        for element in self.tdps.tdps : 
+            self.random_non_exist(element,1)
       
-
-        
-
-        
-
-
-    def execute_mutation(self):
-        print("MUTAION rani hna hhhhhhh wtfff")
         for i in range(100) :
             index = random.randint(0 , len(self.ordred_population) -1 )
+            self.ordred_population[index]["day"] = self.random_day()
             self.ordred_population[index]["prof"] = self.random_prof(self.ordred_population[index]["type"],self.ordred_population[index]["id"])
             self.ordred_population[index]["requirement"] = self.random_requirement(self.ordred_population[index]["requirementId"])
-            self.ordred_population[index]["startH"] = self.random_time(self.ordred_population[index]["hour"],self.ordred_population[index]["day"])
+            self.ordred_population[index]["startH"] = self.random_time(self.ordred_population[index]["hour"],self.ordred_population[index]["day"],self.ordred_population[index]["type"])
             self.ordred_population[index]["endH"] = self.ordred_population[index]["startH"] +self.ordred_population[index]["hour"]
-            
-            #change module
+                 
+    
     def random_day(self):
         return  random.randint(1,5)  
 
@@ -302,6 +308,7 @@ class GeneticAlgorithm:
                 return profs[random.randint(0,len(profs) -1)]  
             else :
                 return None
+    
     def random_requirement(self,id):
         reqs = []
         for requirement in self.requirements.requirements :
@@ -312,23 +319,50 @@ class GeneticAlgorithm:
             return reqs[random.randint(0,len(reqs) -1)]  
         else :
             return None 
-    def random_time(self,hour,day):
+  
+    def random_time(self,hour,day ,type):
         number = random.randint(8,16)
         if hour <= 1 :
             if day == 3 :
-                print("day ",day)
                 number = 12
             else :
+                
                 number = random.randint(14,16)
         else :
-            while (number == 12 and hour > 1 )  or number == 13 or (hour > 1  and number == 16  )  :
-                    number = random.randint(8,16)
+            if day == 3 :
+                number = random.randint(8,11)
+            else :
+                while (number == 12 and hour > 1 )  or number == 13 or (hour > 1  and number == 16  )  or (type  == 0 and number > 14 ) :
+                        number = random.randint(8,16)
 
         return number       
-    def check_if_exist_in_population(self,element):
-        if element in self.population : 
-            return  True
-        return  False  
+  
+    
+   
+    def random_non_exist(self,element,type) :
+        exist = False
+        if type == 0 :
+            if len(element["positionscours"]) != 0 :
+                exist = True
+        for session in self.ordred_population :
+            if session["name"] == element["name"]  :
+                exist = True
+                break
+        if not exist :
+            for day in range(1,6):
+              for i in range(50):
+                    session_copy = element.copy()
+                    session_copy["requirement"] = self.random_requirement(element["requirementId"])
+                    session_copy["prof"] = self.random_prof( type , element["id"] )
+                    session_copy["day"] = day
+                    session_copy["startH"] = self.random_time(element["hour"],day,type)
+                    session_copy["startMin"] = 0 
+                    session_copy["type"] = type 
+                    session_copy["endH"] = session_copy["startH"] + element["hour"]
+                    session_copy["endMin"] = element["min"]
+                    if not session_copy in self.ordred_population :
+                        self.ordred_population.append(session_copy)
+
     def sum_time(self,day):
         sumH = 0 
         sumMin = 0 

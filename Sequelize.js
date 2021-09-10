@@ -145,6 +145,7 @@ sequelize.sync({ force: true })
                 const k_sail = await Users.create({ email: "k.sail@esi-sba.dz", firstname: "Karima", lastname: "SAIL", role: 1, username: "k.sail", password: Hashedpassword, type: "MCB" })
                 const m_mechab = await Users.create({ email: "m.mechab@esi-sba.dz", firstname: "Mustapha", lastname: "MECHAB", role: 1, username: "m.mechab", password: Hashedpassword, type: "Pr" })
                 const h_mami = await Users.create({ email: "h.mami@esi-sba.dz", firstname: "Hind", lastname: "MAMI", role: 1, username: "h.mami", password: Hashedpassword, type: "MCB" })
+                const m_omar = await Users.create({ email: "o.mahdaoui@esi-sba.dz", firstname: "OMAR", lastname: "Mahdaoui", role: 1, username: "o.mahdaoui", password: Hashedpassword, type: "MCB" })
 
                 // LES ANNEES ET LES SEMESTRES DE ESI SBA
                 const year1 = await Years.create({ name: "1er cycle préparatoire", email: "etudiant1@esi-sba.dz" })
@@ -318,7 +319,7 @@ sequelize.sync({ force: true })
                 
                 // tee 
                 await ResponsablesTDP.create({ userId: h_mami.id, tdpId: tee_td.id })
-                
+                await ResponsablesTDP.create({ userId: m_omar.id, tdpId: tee_td.id })
 
             }
 
