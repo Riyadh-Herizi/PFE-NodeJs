@@ -13,7 +13,7 @@ module.exports = (sequelize, type) => {
             type: type.INTEGER, 
             defaultValue: 0
         }, 
-        status :{
+        statut :{
             type: type.INTEGER, 
             defaultValue: 0
         }, 
