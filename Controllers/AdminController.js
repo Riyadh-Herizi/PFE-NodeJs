@@ -95,6 +95,59 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    deleteTDP: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const positions = await Positions.findAll({where : {tdpId : body.id}})
+        
+            if ( positions.length  ) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce TD / TP a cause de sa participation aux plannings" });
+            }
+            await TDP.destroy({ where:  {id : body.id } });
+            res.status(200).send()
+            
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteCours: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const positions = await PositionsCours.findAll({where : {courId : body.id}})
+        
+            if ( positions.length  ) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce cours a cause de sa participation aux plannings" });
+            }
+            await Cours.destroy({ where:  {id : body.id } });
+            res.status(200).send()
+            
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteModule: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const positions = await Positions.findAll({ include : { model : TDP , required : true , where : {moduleId : body.id}} })
+            const positionscours = await PositionsCours.findAll({ include : { model : Cours , required : true , where : {moduleId : body.id}} })
+            if ( positions.length  || positionscours.length ) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce module a cause de sa participation aux plannings" });
+            }
+            await Modules.destroy({ where:  {id : body.id } });
+            res.status(200).send()
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     addModule: async (req, res) => {
         try {
             const body = req.body.module;
