@@ -33,6 +33,7 @@ router.post('/addresponsable', isAdmin , AdminController.addResponsable)
 router.post('/addprof', isAdmin , AdminController.addProf)
 router.post('/updateprof', isAdmin , AdminController.updateProf)
 
+
 router.post('/deleteprof', isAdmin , AdminController.deleteProf)
 router.post('/deletetdp', isAdmin , AdminController.deleteTDP)
 router.post('/deletecours', isAdmin , AdminController.deleteCours)

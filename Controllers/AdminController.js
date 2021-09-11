@@ -228,12 +228,13 @@ var ControllerFunctions = {
                 }
             })
 
-            const modules = await Modules.findAll({ where: { requirementId: body.id } })
+            const cours = await Cours.findAll({ where: { requirementId: body.id } })
+            const tdps = await TDP.findAll({ where: { requirementId: body.id } })
 
             if (positions.length || positionscours.length) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer ce type d'endroit, a cause d'utilisation dans les plannings " });
             }
-            else if (modules.length) {
+            else if (tdps.length || cours.length ) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer ce type d'endroit, a cause d'affectation dans les modules " });
             }
 
