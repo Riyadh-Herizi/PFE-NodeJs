@@ -130,7 +130,7 @@ var ControllerFunctions = {
                 }
                 else {
     
-                    await Cours.update({  hour: body.hour, min: body.min },
+                    await Cours.update({  hour: body.hour, min: body.min , requirementId : requirement },
                         { where: { id: body.id } })
     
                     res.status(200).send()
@@ -145,7 +145,7 @@ var ControllerFunctions = {
                 }
                 else {
                     
-                    await TDP.update({  hour: body.hour, min: body.min },
+                    await TDP.update({  hour: body.hour, min: body.min , requirementId : requirement  },
                         { where: { id: body.id } })
 
                     res.status(200).send()
@@ -432,7 +432,7 @@ var ControllerFunctions = {
             if (!(body.name)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            await Modules.update({ name: body.name , hour : body.hour , min : body.min , coefficient : body.coefficient },
+            await Modules.update({ name: body.name , examenH : body.hour , examenMin : body.min , coefficient : body.coefficient },
                 { where: { id: body.id } })
 
             res.status(200).send()
