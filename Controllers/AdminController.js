@@ -796,20 +796,22 @@ var ControllerFunctions = {
             const body = req.body;
             const type = req.body.type;
             if (type === 0) {
-                responsables = await Users.findAll({
+                responsables = await Responsables.findAll({
+                    where: { courId: body.targetId } ,
                     include: {
-                        model: Responsables,
+                        model: Users,
                         required: true,
-                        where: { courId: body.targetId }
+                        
                     }
                 })
             }
             else if (type === 1) {
-                responsables = await Users.findAll({
+                responsables = await ResponsablesTDP.findAll({
+                    where: { tdpId: body.targetId },
                     include: {
-                        model: ResponsablesTDP,
+                        model: Users,
                         required: true,
-                        where: { tdpId: body.targetId }
+                        
                     }
                 })
 
