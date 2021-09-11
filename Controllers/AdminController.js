@@ -184,7 +184,7 @@ var ControllerFunctions = {
             })
 
             if (plannings.length) {
-                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce section, supprimmer ses plannings d'abord " });
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer cette section, supprimmer ses plannings d'abord " });
             }
             await Groups.destroy({ where: { sectionId: body.id } });
             await Sections.destroy({ where: { id: body.id } });
