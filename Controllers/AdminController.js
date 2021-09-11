@@ -52,11 +52,11 @@ var ControllerFunctions = {
         try {
 
             const body = req.body;
-            if (!(body.username  && body.type && body.firstname && body.lastname && body.email)) {
+            if (!(body.username && body.type && body.firstname && body.lastname && body.email)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const existEmail = await Users.findOne({ where: { email: body.email , id : { [Op.ne] :body.id}} })
-            const existUsername = await Users.findOne({ where: { username: body.username , id : { [Op.ne] :body.id}} })
+            const existEmail = await Users.findOne({ where: { email: body.email, id: { [Op.ne]: body.id } } })
+            const existUsername = await Users.findOne({ where: { username: body.username, id: { [Op.ne]: body.id } } })
             if (existEmail || existUsername) {
                 if (existUsername)
                     res.status(400).send({ error: "Nom d'utilisateur est occupé par un autre utilisateur" });
@@ -65,11 +65,11 @@ var ControllerFunctions = {
 
             }
             else {
-            
-                await Users.update({ firstname: body.firstname, lastname: body.lastname, username: body.username ,type: body.type, email: body.email },
-                    {where : {id : body.id }})
-               
-              res.status(200).send()
+
+                await Users.update({ firstname: body.firstname, lastname: body.lastname, username: body.username, type: body.type, email: body.email },
+                    { where: { id: body.id } })
+
+                res.status(200).send()
             }
         }
         catch (err) {
@@ -81,14 +81,17 @@ var ControllerFunctions = {
         try {
 
             const body = req.body;
-            const positions = await Positions.findAll({where : {userId : body.id}})
-            const positionscours = await PositionsCours.findAll({where : {userId : body.id}})
-            if ( positions.length || positionscours.length ) {
+            const positions = await Positions.findAll({ where: { userId: body.id } })
+            const positionscours = await PositionsCours.findAll({ where: { userId: body.id } })
+            if (positions.length || positionscours.length) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer cet enseignant a cause de sa participation aux plannings" });
             }
-            await Users.destroy({ where:  {id : body.id } });
+
+            await Responsables.destroy({ where: { userId: body.id } });
+            await ResponsablesTDP.destroy({ where: { userId: body.id } });
+            await Users.destroy({ where: { id: body.id } });
             res.status(200).send()
-            
+
         }
         catch (err) {
             console.log(err)
@@ -99,14 +102,16 @@ var ControllerFunctions = {
         try {
 
             const body = req.body;
-            const positions = await Positions.findAll({where : {tdpId : body.id}})
-        
-            if ( positions.length  ) {
+            const positions = await Positions.findAll({ where: { tdpId: body.id } })
+            if (positions.length) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer ce TD / TP a cause de sa participation aux plannings" });
             }
-            await TDP.destroy({ where:  {id : body.id } });
+            await ResponsablesTDP.destroy({
+                where: { tdpId: body.id }
+            });
+            await TDP.destroy({ where: { id: body.id } });
             res.status(200).send()
-            
+
         }
         catch (err) {
             console.log(err)
@@ -117,14 +122,139 @@ var ControllerFunctions = {
         try {
 
             const body = req.body;
-            const positions = await PositionsCours.findAll({where : {courId : body.id}})
-        
-            if ( positions.length  ) {
+            const positions = await PositionsCours.findAll({ where: { courId: body.id } })
+
+            if (positions.length) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer ce cours a cause de sa participation aux plannings" });
             }
-            await Cours.destroy({ where:  {id : body.id } });
+            await Responsables.destroy({
+                where: { courId: body.id }
+            });
+
+            await Cours.destroy({ where: { id: body.id } });
             res.status(200).send()
-            
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteGroup: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const plannings = await Plannings.findAll({ where: { groupId: body.id } })
+
+            if (plannings.length) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce group, supprimmer son planning d'abord " });
+            }
+
+            await Groups.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteResponsable: async (req, res) => {
+        try {
+            const body = req.body;
+            if (body.type == 0)
+                await Responsables.destroy({ where: { id: body.id } });
+            else
+                await ResponsablesTDP.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteSection: async (req, res) => {
+        try {
+            const body = req.body;
+            const plannings = await Plannings.findAll({
+                include: {
+                    model: Groups, required: true, where: { sectionId: body.id }
+                }
+            })
+
+            if (plannings.length) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce section, supprimmer ses plannings d'abord " });
+            }
+            await Groups.destroy({ where: { sectionId: body.id } });
+            await Sections.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteSubRequirement: async (req, res) => {
+        try {
+
+            const body = req.body;
+            const positions = await Positions.findAll({ where: { subrequirementId: body.id } })
+            const positionscours = await PositionsCours.findAll({ where: { subrequirementId: body.id } })
+            if (positions.length || positionscours.length) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer cet endroit, a cause d'utilisation dans les plannings" });
+            }
+            await SubRequirements.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deleteRequirement: async (req, res) => {
+        try {
+            const body = req.body;
+            const positions = await Positions.findAll({
+                include: {
+                    model: SubRequirements, required: true, where: { requirementId: body.id }
+                }
+            })
+            const positionscours = await PositionsCours.findAll({
+                include: {
+                    model: SubRequirements, required: true, where: { requirementId: body.id }
+                }
+            })
+
+            const modules = await Modules.findAll({ where: { requirementId: body.id } })
+
+            if (positions.length || positionscours.length) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce type d'endroit, a cause d'utilisation dans les plannings " });
+            }
+            else if (modules.length) {
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce type d'endroit, a cause d'affectation dans les modules " });
+            }
+
+            await SubRequirements.destroy({ where: { requirementId: body.id } });
+            await Requirements.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deletePlanning: async (req, res) => {
+        try {
+            const body = req.body;
+            await Positions.destroy({ where: { planningId: body.id } })
+            await PositionsCours.destroy({ where: { planningId: body.id } })
+            await Plannings.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
         }
         catch (err) {
             console.log(err)
@@ -135,12 +265,27 @@ var ControllerFunctions = {
         try {
 
             const body = req.body;
-            const positions = await Positions.findAll({ include : { model : TDP , required : true , where : {moduleId : body.id}} })
-            const positionscours = await PositionsCours.findAll({ include : { model : Cours , required : true , where : {moduleId : body.id}} })
-            if ( positions.length  || positionscours.length ) {
+            const positions = await Positions.findAll({ include: { model: TDP, required: true, where: { moduleId: body.id } } })
+            const positionscours = await PositionsCours.findAll({ include: { model: Cours, required: true, where: { moduleId: body.id } } })
+            if (positions.length || positionscours.length) {
                 return res.status(400).send({ error: "vous ne pouvez pas supprimer ce module a cause de sa participation aux plannings" });
             }
-            await Modules.destroy({ where:  {id : body.id } });
+
+            await Responsables.destroy({
+                include: {
+                    model: Cours, where: { moduleId: body.id }
+                }
+            });
+            await ResponsablesTDP.destroy({
+                include: {
+                    model: TDP, where: { moduleId: body.id }
+                }
+            });
+
+            await TDP.destroy({ where: { moduleId: body.id } });
+            await Cours.destroy({ where: { moduleId: body.id } });
+
+            await Modules.destroy({ where: { id: body.id } });
             res.status(200).send()
         }
         catch (err) {
@@ -234,7 +379,7 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1, statut : 1 ,
+                                        auto: 1, statut: 1,
                                         semesterId: { [Op.in]: id_semesters }
 
                                     },
@@ -248,7 +393,7 @@ var ControllerFunctions = {
                                     model: Plannings,
                                     required: true,
                                     where: {
-                                        auto: 1, statut : 1,
+                                        auto: 1, statut: 1,
                                         semesterId: { [Op.in]: id_semesters }
                                     },
 
@@ -262,7 +407,7 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1, statut : 1,
+                                auto: 1, statut: 1,
                                 groupId: { [Op.in]: ids },
                                 semesterId: { [Op.in]: id_semesters }
 
@@ -322,7 +467,7 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1 , statut : 1
+                                auto: 1, statut: 1
                             }
                         }
                     },
@@ -333,7 +478,7 @@ var ControllerFunctions = {
                             model: Plannings,
                             required: true,
                             where: {
-                                auto: 1, statut : 1
+                                auto: 1, statut: 1
                             }
                         }
                     }
@@ -341,9 +486,9 @@ var ControllerFunctions = {
                 })
 
                 const planning = await Plannings.create({
-                                auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
-                                    + group.name, semesterId: body.semester , statut : 0
-                            })
+                    auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
+                        + group.name, semesterId: body.semester, statut: 0
+                })
                 res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
 
                 axios.post('http://127.0.0.1:4001/make_planning',
@@ -351,14 +496,14 @@ var ControllerFunctions = {
                 )
                     .then(async function (response) {
                         if (response.data.length == 0) {
-                        console.log("planning vide ")
-                        await Plannings.update(
-                            { statut : -1 },
-                            { where: { id: planning.id } }
-                          )
+                            console.log("planning vide ")
+                            await Plannings.update(
+                                { statut: -1 },
+                                { where: { id: planning.id } }
+                            )
                         }
                         else {
-                           
+
 
 
                             for (let i = 0; i < response.data.length; i++) {
@@ -386,9 +531,9 @@ var ControllerFunctions = {
 
                             }
                             await Plannings.update(
-                                { statut : 1 },
+                                { statut: 1 },
                                 { where: { id: planning.id } }
-                              )
+                            )
 
                         }
 
