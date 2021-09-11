@@ -32,6 +32,12 @@ router.post('/getresponsables', isAdmin , AdminController.getResponsables)
 router.post('/addresponsable', isAdmin , AdminController.addResponsable)
 router.post('/addprof', isAdmin , AdminController.addProf)
 router.post('/updateprof', isAdmin , AdminController.updateProf)
+router.post('/updatetdp_cours', isAdmin , AdminController.updateTDP_Cours)
+router.post('/updatemodule', isAdmin , AdminController.updateModule)
+router.post('/updaterequirement', isAdmin , AdminController.updateRequirement)
+router.post('/updaterequirement', isAdmin , AdminController.updateSubRequirement)
+router.post('/updategroup', isAdmin , AdminController.updateGroup)
+router.post('/updatesection', isAdmin , AdminController.updateSection)
 
 
 router.post('/deleteprof', isAdmin , AdminController.deleteProf)

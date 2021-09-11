@@ -118,6 +118,48 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    updateTDP_Cours: async (req, res) => {
+        try {
+
+            const body = req.body;
+            if (body.type == 0) {
+
+                const positionscours = await PositionsCours.findAll({ where: { courId: body.id  } })
+                if (positionscours.length) {
+                        res.status(400).send({ error: " Vous ne pouvez pas modifier ce cours a cause de sa présence dans les plannings" });
+                }
+                else {
+    
+                    await Cours.update({  hour: body.hour, min: body.min },
+                        { where: { id: body.id } })
+    
+                    res.status(200).send()
+                }
+
+            }
+            else {
+                const positions = await Positions.findAll({ where: { tdpId: body.id  } })
+           
+                if (positions.length) {
+                        res.status(400).send({ error: " Vous ne pouvez pas modifier ce TD/TP a cause de sa présence dans les plannings" });
+                }
+                else {
+                    
+                    await TDP.update({  hour: body.hour, min: body.min },
+                        { where: { id: body.id } })
+
+                    res.status(200).send()
+                }
+
+            }
+            
+           
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     deleteCours: async (req, res) => {
         try {
 
@@ -159,6 +201,23 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    updateGroup: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.name)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Groups.update({ name: body.name },
+                { where: { id: body.id } })
+
+            res.status(200).send()
+           
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     deleteResponsable: async (req, res) => {
         try {
             const body = req.body;
@@ -184,12 +243,29 @@ var ControllerFunctions = {
             })
 
             if (plannings.length) {
-                return res.status(400).send({ error: "vous ne pouvez pas supprimer cette section, supprimmer ses plannings d'abord " });
+                return res.status(400).send({ error: "vous ne pouvez pas supprimer ce section, supprimmer ses plannings d'abord " });
             }
             await Groups.destroy({ where: { sectionId: body.id } });
             await Sections.destroy({ where: { id: body.id } });
             res.status(200).send()
 
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    updateSection: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.name)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Sections.update({ name: body.name },
+                { where: { id: body.id } })
+
+            res.status(200).send()
+           
         }
         catch (err) {
             console.log(err)
@@ -208,6 +284,23 @@ var ControllerFunctions = {
             await SubRequirements.destroy({ where: { id: body.id } });
             res.status(200).send()
 
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    updateSubRequirement: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.name)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await SubRequirements.update({ name: body.name },
+                { where: { id: body.id } })
+
+            res.status(200).send()
+           
         }
         catch (err) {
             console.log(err)
@@ -242,6 +335,23 @@ var ControllerFunctions = {
             await Requirements.destroy({ where: { id: body.id } });
             res.status(200).send()
 
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    updateRequirement: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.name)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Requirements.update({ name: body.name },
+                { where: { id: body.id } })
+
+            res.status(200).send()
+           
         }
         catch (err) {
             console.log(err)
@@ -310,6 +420,23 @@ var ControllerFunctions = {
                 await Modules.create({ name: body.name, coefficient: body.coefficient, examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
                 res.status(200).send()
             }
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    updateModule: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.name)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            await Modules.update({ name: body.name , hour : body.hour , min : body.min , coefficient : body.coefficient },
+                { where: { id: body.id } })
+
+            res.status(200).send()
+           
         }
         catch (err) {
             console.log(err)
