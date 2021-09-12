@@ -48,7 +48,10 @@ var ControllerFunctions = {
             plannings2.map((element) => {
                 id_plannings.push(element.id)
             })
-            const plannings = await Plannings.findAll({ where: { id: { [Op.in]: id_plannings } } })
+            const plannings = await Plannings.findAll({ where: { id: { [Op.in]: id_plannings } } , include : {
+                model : Groups,
+                required : true
+            } })
             res.status(200).json(plannings)
         }
         catch (err) {
