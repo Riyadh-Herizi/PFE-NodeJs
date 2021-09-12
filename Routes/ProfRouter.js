@@ -36,7 +36,7 @@ const SECRET_KEY = process.env.TOKEN
 
 // INCLUDING CONTROLLERS
 var ProfController = require("../Controllers/ProfController")
-
+router.post('/getplanning', isProf , AdminController.getPlanning)
 router.post('/generalplanning', isProf , ProfController.getPlanningGeneral)
 router.post('/getplannings', isProf , ProfController.getPlannings)
 
