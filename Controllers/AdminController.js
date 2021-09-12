@@ -146,7 +146,7 @@ var ControllerFunctions = {
                 else {
                     
                     await TDP.update({  hour: body.hour, min: body.min , requirementId : requirement  },
-                        { where: { id: body.id } })
+                        { where: { id: body.id } }) 
 
                     res.status(200).send()
                 }

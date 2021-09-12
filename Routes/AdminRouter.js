@@ -17,6 +17,9 @@ function isAdmin(req, res, next) {
                 req.user = user
                 next();
             }
+            else {
+                res.status(403).send({error : "Not your role"})
+            }
         }
 
     })
