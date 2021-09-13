@@ -28,4 +28,5 @@ var GeneralController = require("../Controllers/GeneralController")
 router.post('/login', GeneralController.login)
 router.post('/refresh', GeneralController.refresh)
 router.post('/getuser', isLoggedIn , GeneralController.getUserInfo)
+
 module.exports = router;

@@ -8,7 +8,7 @@ class GeneticAlgorithm:
     grades_tdp = {"MCA": 0, "MCB": 0,  "Pr": 0}
 
     POPULATION_NUMBER = 100
-    FITNESS_REQUIREMENT = 3
+    FITNESS_REQUIREMENT =  3
     MAX_ETIRATIONS = 1000
     MAX_ETIRATIONS_FOR_MUTATION = 50
     # Hard constraints

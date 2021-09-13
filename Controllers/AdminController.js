@@ -1,8 +1,25 @@
-const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
+const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements, ExamsPlannings, ExamsPositions } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
 const Planning = require("../Models/Planning");
+const moment = require("moment")
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+function getDates(startDate, stopDate) {
+    var dateArray = new Array();
+    var currentDate = startDate;
+    while (currentDate <= stopDate) {
+        dateArray.push(new Date (currentDate));
+        currentDate = currentDate.addDays(1);
+    }
+    return dateArray;
+}
+
 function compare(a, b) {
     if (a.startH < b.startH) {
         return -1;
@@ -18,6 +35,19 @@ function compare(a, b) {
     }
     return 0;
 }
+function compare_modules(a, b) {
+    if (a.coefficient > b.coefficient) {
+        return -1;
+    }
+    if (a.coefficient < b.coefficient) {
+        return 1;
+    }
+    
+    
+    return 0;
+}
+
+
 var ControllerFunctions = {
 
     addProf: async (req, res) => {
@@ -1086,6 +1116,52 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    getExamsPlannings: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.year)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const plannings = await ExamsPlannings.findAll({ where: { yearId: body.year } })
+            res.status(200).json(plannings)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+
+    getExamPlanning: async (req, res) => {
+        try {
+            const body = req.body;
+            if (!(body.id)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const positions = await ExamsPlannings.findAll({ where: { id: body.id } ,
+                include : [
+
+                    {
+                        model : ExamsPositions,
+                        required :  true,
+                        include : {
+                            model : Modules,
+                            required:true
+                        }
+                    }
+
+                ]
+            
+            
+            }  
+               )
+            res.status(200).json(positions)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+
     logout: async (req, res) => {
         const body = req.body;
         if (!body.refreshToken) {
@@ -1098,7 +1174,216 @@ var ControllerFunctions = {
         user.refreshtoken = "";
         await user.save()
         res.status(200).send({ message: "Logged out" })
-    }
+    },
+    makeExams: async (req, res) => {
+        try {
+            const body = req.body;
+            var days = []
+            var modules =  await Modules.findAll( {where :{ semesterId: body.semester } })
+            var dates = getDates(new Date(body.start) , new Date(body.end))
+
+            if (dates.length * 2 < modules.length) {
+                res.status(400).json({error : "Les jours insufissants"})
+            }
+            else {
+                dates.map( async (element)=> {
+               
+
+                var day = moment(element).day(); 
+
+
+                if(day < 6 ) day++
+                else 
+                day = 0
+                var name_day = ""
+                if(day == 0) name_day = "Samedi"
+                if(day == 1) name_day = "Dimanche"
+                if(day == 2) name_day = "Lundi"
+                if(day == 3) name_day = "Mardi"
+                if(day == 4) name_day = "Mercredi"
+                if(day == 5) name_day = "Jeudi"
+                if (day != 6) {
+                    if (day == 0) {
+
+                        if (body.samdi  == 1) {
+                                days.push({ 
+                                    date : moment(element).format('YYYY-MM-DD') ,
+                                    examens : [],
+                                    name : name_day
+                                })
+                            }
+                    }
+                    else {
+
+                        days.push({ 
+                            date : moment(element).format('YYYY-MM-DD') ,
+                            examens : [],
+                            name : name_day
+                        })
+
+                        
+                    }
+                 }
+
+               
+
+            })
+            for (let i = 0 ; i< modules.length ;i++) {
+                var prof = ""
+                const cours = await Cours.findAll({where : {moduleId: modules[i].id} ,
+                include : {
+                    model : Responsables ,
+                    required : false,
+                    include : {
+                        model : Users,
+                        required : true
+                    }
+                }} ) 
+                const tdps = await TDP.findAll({where : {moduleId: modules[i].id} ,
+                    include : {
+                        model : ResponsablesTDP ,
+                        required : false ,
+                        include : {
+                            model : Users,
+                            required : true
+                        }
+                    }} ) 
+                 
+                    if (cours.length) {
+                        cours.map((cour)=> {
+                            if(cour.responsables.length > 0) {
+                                prof = cour.responsables[0].user.firstname +" "+cour.responsables[0].user.lastname        
+                            }
+                        })
+                }
+                else if (tdps.length) {
+                    tdps.map((tdp)=> {
+                        if(tdp.responsablestdps.length > 0) {
+                            prof = tdp.responsablestdps[0].user.firstname +" "+tdp.responsablestdps[0].user.lastname
+                        }
+                    })
+                }
+                
+                modules[i].prof = prof
+            
+            
+            }
+            
+            modules.sort(compare_modules)
+            
+            var counter =0
+
+            for( let i= 0 ; i< modules.length ;i++) {
+            counter = counter % days.length
+            if ( days[counter].examens.length > 2) {
+                i--
+            } 
+            else {
+                days[counter].examens.push(
+                 {
+                    module :modules[i],
+                    time : { 
+                        start : {
+                            hour : 0,
+                            min : 0
+                        },
+                        end : {
+                            hour : 0,
+                            min : 0
+                        }
+                    }
+                }
+            )
+            counter++
+            }
+            
+
+            counter++
+
+
+            }
+
+            for( let i= 0 ; i< days.length ;i++) {
+                
+                if(days[i].examens.length == 1 ) {
+                    days[i].examens[0].time.start.hour = 10
+                    days[i].examens[0].time.start.min = 0
+                    days[i].examens[0].time.end.hour = 10 + days[i].examens[0].module.examenH
+                    days[i].examens[0].time.end.min =  days[i].examens[0].module.examenMin
+                }
+                else {
+                    days[i].examens[0].time.start.hour = 8
+                    days[i].examens[0].time.start.min = 0
+                    days[i].examens[0].time.end.hour = 8 + days[i].examens[0].module.examenH
+                    days[i].examens[0].time.end.min =  days[i].examens[0].module.examenMin
+
+                    days[i].examens[1].time.start.hour = 14
+                    days[i].examens[1].time.start.min = 0
+                    days[i].examens[1].time.end.hour = 14 + days[i].examens[0].module.examenH
+                    days[i].examens[1].time.end.min =  days[i].examens[0].module.examenMin
+                }
+
+
+            }
+
+
+            const semester = await Semesters.findOne({where : {id : body.semester} , 
+                include : {
+                    model : Years,
+                    required : true
+                } })
+
+
+            const planning = await ExamsPlannings.create({
+                auto: 1, semesterId: body.semester, name: "Planning d'examen " + semester.year.name+" "+ body.emd , yearId : semester.year.id , emd :body.emd
+            })
+
+            for (let i = 0 ; i <days.length ; i++ ) {
+                if(days[i].examens.length == 1 ) {
+                    await ExamsPositions.create({
+                    examsplanningId: planning.id, date: days[i].date,
+                    startH:days[i].examens[0].time.start.hour, startMin: days[i].examens[0].time.start.min, endH: days[i].examens[0].time.end.hour,
+                     endMin: days[i].examens[0].time.end.min
+                    , moduleId: days[i].examens[0].module.id , prof : days[i].examens[0].module.prof
+                })
+
+                 }
+                else {
+                    await ExamsPositions.create({
+                        examsplanningId: planning.id, date: days[i].date,
+                        startH:days[i].examens[0].time.start.hour, startMin: days[i].examens[0].time.start.min, endH: days[i].examens[0].time.end.hour,
+                         endMin: days[i].examens[0].time.end.min
+                        , moduleId: days[i].examens[0].module.id, prof : days[i].examens[0].module.prof
+                    })
+
+                    await ExamsPositions.create({
+                        examsplanningId: planning.id, date: days[i].date,
+                        startH:days[i].examens[1].time.start.hour, startMin: days[i].examens[1].time.start.min, endH: days[i].examens[1].time.end.hour,
+                         endMin: days[i].examens[1].time.end.min
+                        , moduleId: days[i].examens[1].module.id, prof : days[i].examens[0].module.prof
+                    })
+
+                }
+                
+            }
+
+
+            res.status(200).json(days)
+
+
+
+
+            }
+
+
+            
+           
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
 
 }
 module.exports = ControllerFunctions;

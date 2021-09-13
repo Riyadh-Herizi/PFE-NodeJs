@@ -173,7 +173,10 @@ getPlanning: async (req, res) => {
                             }
                         ]
                     })
+                  
+                    
                     const positionscours = await PositionsCours.findAll({
+                       
                         include: [
                                     {
                                        model: Users,
@@ -192,7 +195,7 @@ getPlanning: async (req, res) => {
                                         }
                                ]
                            })
-           
+           exist = []
 
             for (var i = 0; i < positions.length; i++) {
                 console.log("Position : " + positions[i].tdp.name)
@@ -212,6 +215,7 @@ getPlanning: async (req, res) => {
                 })
             }
             for (var i = 0; i < positionscours.length; i++) {
+                if (!exist.includes( positionscours.courId)) {
                 console.log("Position : " +positionscours[i].cour.name)
                 console.log("Time start : " +positionscours[i].startH + ":" +positionscours[i].startMin)
                 console.log("Time end : " +positionscours[i].endH + ":" +positionscours[i].endMin)
@@ -228,6 +232,9 @@ getPlanning: async (req, res) => {
                     prof:positionscours[i].user.firstname + " " +positionscours[i].user.lastname
 
                 })
+                exist.push(positionscours.courId)
+                }
+                
             }
             for (let i = 0; i < 7; i++)
                 days[i].sort(compare)

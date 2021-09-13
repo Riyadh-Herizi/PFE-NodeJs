@@ -21,7 +21,8 @@ const ProfRouter = require('./Routes/ProfRouter');
 app.use("/prof", ProfRouter);
 const AdminRouter = require('./Routes/AdminRouter');
 app.use("/admin", AdminRouter);
-
+const APIRouter = require('./Routes/APIRouter');
+app.use("/api", APIRouter);
 // SETTING PUBLIC FOLDER
 app.use(express.static(path.join(__dirname, 'Public')));
 

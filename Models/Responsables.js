@@ -1,6 +1,6 @@
 module.exports = (sequelize, type) => {
 
-    return sequelize.define('repsonsables', {
+    return sequelize.define('responsables', {
         
         
         id: {

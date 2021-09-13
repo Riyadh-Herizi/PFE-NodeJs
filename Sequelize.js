@@ -43,12 +43,30 @@ const Plannings = PlanningsModel(sequelize, Sequelize);
 const PositionsModel = require('./Models/Position');
 const Positions = PositionsModel(sequelize, Sequelize);
 const PositionsCoursModel = require('./Models/PositionsCours');
-const Position = require('./Models/Position');
 const PositionsCours = PositionsCoursModel(sequelize, Sequelize);
+
+const PositionsExamsModel = require('./Models/ExamsPosition');
+const ExamsPositions = PositionsExamsModel(sequelize, Sequelize);
+const ExamsPlanningsModel = require('./Models/ExamsPlanning');
+const ExamsPlannings = ExamsPlanningsModel(sequelize, Sequelize);
+
 
 // DEFINING RELATIONS
 Plannings.hasMany(Positions)
 Positions.belongsTo(Plannings)
+
+ExamsPlannings.hasMany(ExamsPositions)
+ExamsPositions.belongsTo(ExamsPlannings)
+
+
+
+Years.hasMany(ExamsPlannings)
+ExamsPlannings.belongsTo(Years)
+
+
+Modules.hasMany(ExamsPositions)
+ExamsPositions.belongsTo(Modules)
+
 
 Plannings.hasMany(PositionsCours)
 PositionsCours.belongsTo(Plannings)
@@ -107,6 +125,7 @@ TDP.belongsTo(Modules)
 Requirements.hasMany(SubRequirements)
 SubRequirements.belongsTo(Requirements)
 
+
 SubRequirements.hasMany(PositionsCours)
 PositionsCours.belongsTo(SubRequirements)
 
@@ -115,7 +134,7 @@ Positions.belongsTo(SubRequirements)
 
 Semesters.hasMany(Plannings)
 Plannings.belongsTo(Semesters)
-sequelize.sync({ force: true })
+sequelize.sync({ force: false })
     .then(async () => {
         // VERIEFING THE CONNECTION 
         try {
@@ -329,4 +348,4 @@ sequelize.sync({ force: true })
     });
 
 
-module.exports = { Users, Years, Semesters, Modules, Cours, Requirements, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements, Plannings, Positions, PositionsCours }
+module.exports = { Users, Years, Semesters, Modules, Cours, Requirements,ExamsPlannings ,ExamsPositions, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements, Plannings, Positions, PositionsCours }

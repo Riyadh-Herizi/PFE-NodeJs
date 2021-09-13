@@ -41,6 +41,10 @@ router.post('/updaterequirement', isAdmin , AdminController.updateRequirement)
 router.post('/updatesubrequirement', isAdmin , AdminController.updateSubRequirement)
 router.post('/updategroup', isAdmin , AdminController.updateGroup)
 router.post('/updatesection', isAdmin , AdminController.updateSection)
+router.post('/makeexams', isAdmin , AdminController.makeExams)
+
+router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
+router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
 
 
 router.post('/deleteprof', isAdmin , AdminController.deleteProf)
