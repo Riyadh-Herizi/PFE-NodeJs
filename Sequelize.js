@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 
 // DATABASE CONNECTION
-const sequelize = new Sequelize('pfe', "postgres", "root", {
+const sequelize = new Sequelize('pfe', "postgres", "Omar12452354", {
     host: 'localhost',
     dialectOptions: {
         useUTC: false 
