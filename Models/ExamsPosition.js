@@ -13,6 +13,10 @@ module.exports = (sequelize, type) => {
         prof : {
             type : type.STRING,
            
+        },
+        day : {
+            type : type.STRING,
+           
         },   
         startH : {
             type : type.INTEGER,

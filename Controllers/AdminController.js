@@ -1137,7 +1137,7 @@ var ControllerFunctions = {
             if (!(body.id)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
             }
-            const positions = await ExamsPlannings.findAll({ where: { id: body.id } ,
+            const positions = await ExamsPlannings.findOne({ where: { id: body.id } ,
                 include : [
 
                     {
@@ -1341,7 +1341,7 @@ var ControllerFunctions = {
             for (let i = 0 ; i <days.length ; i++ ) {
                 if(days[i].examens.length == 1 ) {
                     await ExamsPositions.create({
-                    examsplanningId: planning.id, date: days[i].date,
+                    examsplanningId: planning.id, date: days[i].date,day :  days[i].name,
                     startH:days[i].examens[0].time.start.hour, startMin: days[i].examens[0].time.start.min, endH: days[i].examens[0].time.end.hour,
                      endMin: days[i].examens[0].time.end.min
                     , moduleId: days[i].examens[0].module.id , prof : days[i].examens[0].module.prof
@@ -1350,17 +1350,17 @@ var ControllerFunctions = {
                  }
                 else {
                     await ExamsPositions.create({
-                        examsplanningId: planning.id, date: days[i].date,
+                        examsplanningId: planning.id, date: days[i].date,day :  days[i].name,
                         startH:days[i].examens[0].time.start.hour, startMin: days[i].examens[0].time.start.min, endH: days[i].examens[0].time.end.hour,
                          endMin: days[i].examens[0].time.end.min
                         , moduleId: days[i].examens[0].module.id, prof : days[i].examens[0].module.prof
                     })
 
                     await ExamsPositions.create({
-                        examsplanningId: planning.id, date: days[i].date,
+                        examsplanningId: planning.id, date: days[i].date,day :  days[i].name,
                         startH:days[i].examens[1].time.start.hour, startMin: days[i].examens[1].time.start.min, endH: days[i].examens[1].time.end.hour,
                          endMin: days[i].examens[1].time.end.min
-                        , moduleId: days[i].examens[1].module.id, prof : days[i].examens[0].module.prof
+                        , moduleId: days[i].examens[1].module.id, prof : days[i].examens[1].module.prof
                     })
 
                 }
