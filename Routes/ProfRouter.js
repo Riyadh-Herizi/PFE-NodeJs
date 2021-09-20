@@ -39,6 +39,9 @@ var ProfController = require("../Controllers/ProfController")
 router.post('/getplanning', isProf , ProfController.getPlanning)
 router.post('/generalplanning', isProf , ProfController.getPlanningGeneral)
 router.post('/getplannings', isProf , ProfController.getPlannings)
-
+router.post('/getyears', isProf , ProfController.getYears)
+router.post('/getallplannings',isProf , ProfController.getallPlannings)
+router.post('/getexamsplannings', isProf , ProfController.getExamsPlannings)
+router.post('/getexamplanning', isProf , ProfController.getExamPlanning)
 
 module.exports = router;

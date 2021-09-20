@@ -42,7 +42,7 @@ router.post('/updatesubrequirement', isAdmin , AdminController.updateSubRequirem
 router.post('/updategroup', isAdmin , AdminController.updateGroup)
 router.post('/updatesection', isAdmin , AdminController.updateSection)
 router.post('/makeexams', isAdmin , AdminController.makeExams)
-
+router.post('/mail', isAdmin , AdminController.mail)
 router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
 router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
 
@@ -52,6 +52,10 @@ router.post('/deletetdp', isAdmin , AdminController.deleteTDP)
 router.post('/deletecours', isAdmin , AdminController.deleteCours)
 router.post('/deletemodule', isAdmin , AdminController.deleteModule)
 router.post('/deleteplanning', isAdmin , AdminController.deletePlanning)
+
+router.post('/deleteplanningexam', isAdmin , AdminController.deletePlanningExam)
+
+
 router.post('/deleterequirement', isAdmin , AdminController.deleteRequirement)
 router.post('/deletesubrequirement', isAdmin , AdminController.deleteSubRequirement)
 router.post('/deletegroup', isAdmin , AdminController.deleteGroup)

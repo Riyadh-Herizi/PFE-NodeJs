@@ -60,6 +60,33 @@ var ControllerFunctions = {
 
     }
 },
+getallPlannings: async (req, res) => {
+    try {
+        const semesters = await Semesters.findAll({ where: { yearId: req.body.yearId }, attributes: ['id'] })
+        var id_semesters = [];
+
+        semesters.map((element) => {
+            id_semesters.push(element.id)
+        })
+        const plannings = await Plannings.findAll({ where: { semesterId: { [Op.in]: id_semesters } } })
+        res.status(200).json(plannings)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json({ error: "Ops , server down" })
+    }
+},
+getYears: async (req, res) => {
+    try {
+        const years = await Years.findAll()
+        res.status(200).json(years)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json({ error: "Ops , server down" })
+    }
+}
+,
 getPlanning: async (req, res) => {
     try {
         const days = [[], [], [], [], [], [], []]
@@ -150,6 +177,52 @@ getPlanning: async (req, res) => {
         res.status(400).json({ error: "Ops , server down" })
     }
 },
+getExamsPlannings: async (req, res) => {
+    try {
+        const body = req.body;
+        if (!(body.year)) {
+            return res.status(450).send({ error: "Data not formatted properly" });
+        }
+        const plannings = await ExamsPlannings.findAll({ where: { yearId: body.year } })
+        res.status(200).json(plannings)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json({ error: "Ops , server down" })
+    }
+},
+
+getExamPlanning: async (req, res) => {
+    try {
+        const body = req.body;
+        if (!(body.id)) {
+            return res.status(450).send({ error: "Data not formatted properly" });
+        }
+        const positions = await ExamsPlannings.findOne({
+            where: { id: body.id },
+            include: [
+
+                {
+                    model: ExamsPositions,
+                    required: true,
+                    include: {
+                        model: Modules,
+                        required: true
+                    }
+                }
+
+            ]
+
+
+        }
+        )
+        res.status(200).json(positions)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json({ error: "Ops , server down" })
+    }
+},
     getPlanningGeneral: async (req, res) => {
         try {
             const body = req.body
@@ -170,6 +243,21 @@ getPlanning: async (req, res) => {
                             {
                                 model: SubRequirements,
                                 required: true
+                            }
+                            ,
+                            {
+                                model: Plannings,
+                                required: true,
+                                include :
+                                {
+                                    model: Groups,
+                                    required: true,
+                                    include :
+                                {
+                                    model: Sections,
+                                    required: true
+                                }
+                                }
                             }
                         ]
                     })
@@ -193,17 +281,26 @@ getPlanning: async (req, res) => {
                                             model: SubRequirements,
                                             required: true
                                         }
+                                        ,
+                                        {
+                                            model: Plannings,
+                                            required: true,
+                                            include :
+                                            {
+                                                model: Groups,
+                                                required: true,
+                                                include :
+                                            {
+                                                model: Sections,
+                                                required: true
+                                            }
+                                            }
+                                        }
                                ]
                            })
            exist = []
 
             for (var i = 0; i < positions.length; i++) {
-                console.log("Position : " + positions[i].tdp.name)
-                console.log("Time start : " + positions[i].startH + ":" + positions[i].startMin)
-                console.log("Time end : " + positions[i].endH + ":" + positions[i].endMin)
-                console.log("Salle : " + positions[i].subrequirement.name)
-                console.log("day : " + positions[i].day)
-                console.log("Prof : " + positions[i].user.firstname + " " + positions[i].user.lastname)
                 days[positions[i].day].push({
                     startH: positions[i].startH,
                     endH: positions[i].endH,
@@ -214,14 +311,9 @@ getPlanning: async (req, res) => {
                     prof: positions[i].user.firstname + " " + positions[i].user.lastname
                 })
             }
+          
             for (var i = 0; i < positionscours.length; i++) {
-                if (!exist.includes( positionscours.courId)) {
-                console.log("Position : " +positionscours[i].cour.name)
-                console.log("Time start : " +positionscours[i].startH + ":" +positionscours[i].startMin)
-                console.log("Time end : " +positionscours[i].endH + ":" +positionscours[i].endMin)
-                console.log("Salle : " +positionscours[i].subrequirement.name)
-                console.log("day : " +positionscours[i].day)
-                console.log("Prof : " +positionscours[i].user.firstname + " " +positionscours[i].user.lastname)
+                if (!exist.includes(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)) {
                 days[positionscours[i].day].push({
                     startH:positionscours[i].startH,
                     endH:positionscours[i].endH,
@@ -232,13 +324,31 @@ getPlanning: async (req, res) => {
                     prof:positionscours[i].user.firstname + " " +positionscours[i].user.lastname
 
                 })
-                exist.push(positionscours.courId)
+                exist.push(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)
+                }
+                else {
+                    console.log(exist)
+                    console.log("ID : " +positionscours[i].courId)
+                    console.log("Position : " +positionscours[i].cour.name)
+                    console.log("Time start : " +positionscours[i].startH + ":" +positionscours[i].startMin)
+                    console.log("Time end : " +positionscours[i].endH + ":" +positionscours[i].endMin)
+                    console.log("Salle : " +positionscours[i].subrequirement.name)
+                    console.log("day : " +positionscours[i].day)
+                    console.log("Prof : " +positionscours[i].user.firstname + " " +positionscours[i].user.lastname)
                 }
                 
             }
             for (let i = 0; i < 7; i++)
                 days[i].sort(compare)
+
+                for (let i = 0; i < 7; i++)    
+                for (let j = 0; j < days[i].length; j++)
+
+                console.log(days[i][j].name)
             res.status(200).json({ days: days, name: "Planning générale" })
+
+
+
         }
         catch (err) {
             console.log(err)

@@ -171,7 +171,7 @@ var ControllerFunctions = {
                 })
             }
             for (var i = 0; i < positionscours.length; i++) {
-                if (!exist.includes( positionscours.courId)) {
+                if (!exist.includes(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)) {
 
 
                     var time_sH = positionscours[i].startH+""
@@ -199,7 +199,10 @@ var ControllerFunctions = {
                     year : positionscours[i].planning.group.section.year.name
 
                 })
-                exist.push(positionscours.courId)
+                exist.push(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)
+            }
+            else {
+                console.log(exist)
             }
             }
             for (let i = 0; i < 7; i++)
@@ -331,7 +334,7 @@ var ControllerFunctions = {
                 })
             }
             for (var i = 0; i < positionscours.length; i++) {
-                if (!exist2.includes( positionscours.courId)) {
+                if (!exist2.includes(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)) {
 
 
                     var time_sH = positionscours[i].startH+""
@@ -359,7 +362,10 @@ var ControllerFunctions = {
                         year : positionscours[i].planning.group.section.year.name
 
                     })
-                exist2.push(positionscours.courId)
+                    exist2.push(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)
+            }
+            else {
+                console.log(exist2)
             }
             }
             for (let i = 0; i < 7; i++)

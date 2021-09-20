@@ -4,6 +4,8 @@ const axios = require('axios')
 const { Op } = require("sequelize");
 const Planning = require("../Models/Planning");
 const moment = require("moment")
+var nodemailer = require('nodemailer');
+
 Date.prototype.addDays = function (days) {
     var date = new Date(this.valueOf());
     date.setDate(date.getDate() + days);
@@ -402,6 +404,19 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    deletePlanningExam: async (req, res) => {
+        try {
+            const body = req.body;
+            await ExamsPositions.destroy({ where: { examsplanningId: body.id } })
+            await ExamsPlannings.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     deleteModule: async (req, res) => {
         try {
 
@@ -450,6 +465,40 @@ var ControllerFunctions = {
                 await Modules.create({ name: body.name, coefficient: body.coefficient, examenH: body.examenH, examenMin: body.examenMin, semesterId: body.semester })
                 res.status(200).send()
             }
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    mail: async (req, res) => {
+        try {
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                  user: 'esiplanning22@gmail.com',
+                  pass: 'esi12345678'
+                }
+              });
+              
+            var mailOptions = {
+                from: 'esiplanning22@gmail.com',
+                to: 'riyadh.herizi1998@gmail.com',
+                subject: 'Sending Email using Node.js',
+                text: 'That was easy!'
+              };
+
+
+            transporter.sendMail(mailOptions, function(error, info){
+                if (error) { 
+                    res.status(400).json({error : "Ops"})
+               
+                } else {
+                  console.log('Email sent: ' + info.response);
+                  res.status(200).send({})
+                }
+              }); 
+           
         }
         catch (err) {
             console.log(err)
@@ -696,7 +745,11 @@ var ControllerFunctions = {
                         }
 
                     })
-                    .catch(function (error) {
+                    .catch(async function (error) {
+                        await Plannings.update(
+                            { statut: -1 },
+                            { where: { id: planning.id } }
+                        )
                         console.log(error)
                     });
             }

@@ -10,7 +10,7 @@ const sequelize = new Sequelize('pfe', "postgres", "root", {
         useUTC: false 
     },
     dialect: 'postgres',
-    timezone: '+05:30'
+    timezone: '+01:00'
 });
 
 // ICLUDING MODELS

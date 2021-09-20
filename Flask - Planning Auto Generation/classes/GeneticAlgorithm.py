@@ -290,7 +290,7 @@ class GeneticAlgorithm:
                 if cour["id"] == id:
                     session = cour
                     break
-            for prof in session["repsonsables"] :
+            for prof in session["responsables"] :
                 profs.append(prof)
             if len(profs) > 0  :
                 return profs[random.randint(0,len(profs) -1)]  
@@ -302,7 +302,7 @@ class GeneticAlgorithm:
                 if tdp["id"] == id:
                     session = tdp
                     break
-            for prof in session["repsonsablestdps"] :
+            for prof in session["responsablestdps"] :
                 profs.append(prof)
             if len(profs) > 0  :
                 return profs[random.randint(0,len(profs) -1)]  
