@@ -1,4 +1,4 @@
-const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
+const { Users, Years, Semesters, Plannings, PositionsCours, ExamsPositions , ExamsPlannings, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements } = require("../Sequelize");
 
 const { Op } = require("sequelize");
 
@@ -306,6 +306,7 @@ getExamPlanning: async (req, res) => {
                     endH: positions[i].endH,
                     startMin: positions[i].startMin,
                     endMin: positions[i].endMin,
+                    target : positionscours[i].planning.group.name,
                     requirement: positions[i].subrequirement.name,
                     name: positions[i].tdp.name,
                     prof: positions[i].user.firstname + " " + positions[i].user.lastname
@@ -317,6 +318,7 @@ getExamPlanning: async (req, res) => {
                 days[positionscours[i].day].push({
                     startH:positionscours[i].startH,
                     endH:positionscours[i].endH,
+                    target : positionscours[i].planning.group.section.name,
                     startMin:positionscours[i].startMin,
                     endMin:positionscours[i].endMin,
                     requirement:positionscours[i].subrequirement.name,
