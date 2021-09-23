@@ -544,22 +544,7 @@ var ControllerFunctions = {
         }
     },
   
-    test: async (req, res) => {
-        const profs = await Users.findAll({
-            where: { role: 1 },
-            include: [{
-                model: Positions,
-                required: false,
-            },
-            {
-                model: PositionsCours,
-                required: false,
-            }]
-        })
-        
-        res.json(profs)
-
-    },
+   
     makePlanning: async (req, res) => {
         try {
             const body = req.body;
@@ -1378,7 +1363,89 @@ var ControllerFunctions = {
 
                 }
   
+                for(let i = 0 ; i < days.length ;i++){
                 
+
+                    if(days[i].examens.length > 1 ) {
+                      
+                        if(days[i].examens[0].module.coefficient == 5 && i!=0)
+                        {
+                           
+                            for(let j = i+1 ; j < days.length ;j++ )
+                            {
+                               
+                                if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient <= 4)
+                                {
+                                 
+                                    days[j].examens.push(days[i].examens[0]);
+                                    days[i].examens.push(days[j].examens[0]);
+
+                                    days[j].examens.shift();
+                                    if(days[i].examens[1].module.coefficient >= days[i].examens[2].module.coefficient)
+                                    days[i].examens.shift();
+                                    else{
+                                        var swap = days[i].examens[1]
+                                        days[i].examens[1] = days[i].examens[2]
+                                        days[i].examens[2] = swap
+                                        days[i].examens.shift();
+
+                                    }
+                               
+                                    
+
+                                   
+                                    break;
+    
+    
+                                }
+                            }
+    
+                        }
+
+
+                        else if( days[i].examens[0].module.coefficient == 5 )
+                        {
+                            for(let j = i+1 ; j < days.length ;j++ )
+                            {
+                               
+                                if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient != 5)
+                                {
+                                  
+                                    days[j].examens.push(days[i].examens[1]);
+                                    days[i].examens.pop();
+                                    break;
+    
+    
+                                }
+                            }
+    
+
+                        }
+                        
+                        continue
+                    }
+
+                    if( days[i].examens.length == 1 && days[i].examens[0].module.coefficient == 5  )
+                    {
+                        for(let j = i+1 ; j < days.length ;j++ )
+                        {
+                           
+                            if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient < 3)
+                            {
+                              
+                                var swap2 = days[i].examens[0]
+                                days[i].examens[0] = days[j].examens[0]
+                                days[j].examens[0] = swap2
+                             
+                                break;
+
+
+                            }
+                        }
+
+                    }
+    
+                }
 
  
                 for (let i = 0; i < days.length; i++) {
