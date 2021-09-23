@@ -7,12 +7,12 @@ class GeneticAlgorithm:
     grades_cours = {"MCA": 0, "MCB": 0, "Pr": 0}
     grades_tdp = {"MCA": 0, "MCB": 0,  "Pr": 0}
 
-    POPULATION_NUMBER = 100
-    FITNESS_REQUIREMENT =  3
+    POPULATION_NUMBER = 1000
+    FITNESS_REQUIREMENT =  4
     MAX_ETIRATIONS = 1000
-    MAX_ETIRATIONS_FOR_MUTATION = 50
+    MAX_ETIRATIONS_FOR_MUTATION = 40
     # Hard constraints
-    allowed_time = [0, 7, 7, 5, 7, 7, 0]
+    allowed_time = [0, 8, 8, 6, 8, 8, 0]
     init_population_count = 0
     sessions = []
     population = []
@@ -73,11 +73,16 @@ class GeneticAlgorithm:
                 self.initial_population()
                 self.ordred_population = []
                 self.ordred_population = sorted(self.population, key=lambda x: (  x['startH'] , x['startMin'] ),reverse=False)
-                valide = self.evalute_population() 
+                valide = False
                 counter = self.MAX_ETIRATIONS
                 mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
                 while counter > 0 :
+                    print("--------------------------------------------------")
                     valide = self.evalute_population() 
+                    
+                    for element in self.temp_planning :
+                       print(element["name"] ," ", element["startH"],"-->" ,element["endH"], " DAY -->" ,element["day"], " prof : ",element["prof"]["user"]["lastname"])
+                          
                     if valide :
                         break
                     else :  
@@ -130,21 +135,33 @@ class GeneticAlgorithm:
             return False
 
     def evalute_session(self , element):
+      
         req =  self.check_requirement(element)
         prof =  self.check_prof(element)
-        check = self.check_add_for_planning_temp(element)
-        fitness_value = req + prof + check 
+        check = self.check_add_for_planning_temp(element)  
+        prof_charge =  1
+        if element["name"] == "TP - Systèmes d'exploitation 1" :
+            print(element["name"] ," ", element["startH"],"-->" ,element["endH"], " DAY -->" ,element["day"], " prof : ",element["prof"]["user"]["lastname"])
+            if req == 0 :
+                print("REQ Problem : TP - Systèmes d'exploitation 1 ")
+            if prof == 0 :
+                print("PROF Problem : TP - Systèmes d'exploitation 1 ")
+            if check == 0 :
+                print("PLACEMENT Problem : TP - Systèmes d'exploitation 1 ")
+       
+        fitness_value = req + prof + check + prof_charge
         return  self.FITNESS_REQUIREMENT - fitness_value
 
     def check_prof(self,element):
         prof = element["prof"]["user"]
         for position in prof["positions"] :
             if self.interval_intersect((position["startH"] +position["startMin"]/60 ,position["endH"]+position["endMin"]/60),
-            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
-               return 0
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 and element["day"] == position["day"] :
+    
+                return 0
         for position in prof["positionscours"] :
             if self.interval_intersect((position["startH"] +position["startMin"]/60 ,position["endH"]+position["endMin"]/60),
-            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+            (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 and element["day"] == position["day"]:
                return 0
         return 1
 
@@ -154,12 +171,12 @@ class GeneticAlgorithm:
         if salle != None :
             for use in salle["positions"] :
                 if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
-                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 and element["day"] == use["day"]:
                     return 0
                     
             for use in salle["positionscours"] :
                 if self.interval_intersect((use["startH"] +use["startMin"]/60 ,use["endH"]+use["endMin"]/60),
-                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 :
+                (element["startH"] +element["startMin"]/60 ,element["endH"]+element["endMin"]/60)) > 0 and element["day"] == use["day"] :
                     return 0   
         else :
             print(salle)
@@ -193,14 +210,8 @@ class GeneticAlgorithm:
         return max(0,min(a1,b1)-max(a0,b0))
     
     def execute_crossover (self):
-        print("--------------------------------------------------")
+        
         print("Applying crossover : " , len(self.ordred_population))
-        #--------------------------------------------------------------------------------------------
-        exist = []
-        for element in self.ordred_population :
-            if element["name"] not in exist :
-                print(element["name"])
-                exist.append(element["name"])
         #--------------------------------------------------------------------------------------------
         self.saved_population = []
         self.crossover_elements = []
@@ -211,8 +222,15 @@ class GeneticAlgorithm:
                     self.saved_population.append(element.copy())
             else :
                 self.saved_population.append(element.copy())
+
+
+        for element in self.ordred_population :
+            if  element["fitness"] == 0 and not element in self.saved_population :
+                self.saved_population.append(element.copy())
+                
+
         #--------------------------------------------------------------------------------------------
-        stop_index = int(round(math.sqrt(len(self.ordred_population) / 3)  ))
+        stop_index = int(round(len(self.ordred_population)* 0.05 ))
         count = 0
         for element in self.ordred_population :
             if count < stop_index : 
@@ -224,7 +242,7 @@ class GeneticAlgorithm:
         print("stop index : " , stop_index)
         print("saved elements : " , len(self.saved_population))
         print("crossover elements : " , len(self.crossover_elements))
-        print("copied elemets")  
+        #print("copied elemets")  
         #--------------------------------------------------------------------------------------------      
         kids = []
         for element1 in  self.crossover_elements :
@@ -232,9 +250,10 @@ class GeneticAlgorithm:
                 kid = element1.copy()
                 kid1 = element1.copy()
                 kid2 = element1.copy()
-                if element1 != element2 :
-                    kid["prof"] = element2["prof"]
-                    kids.append(kid.copy())
+                kid3 = element1.copy()
+                if element1["id"] == element2["id"] :
+                    #kid["prof"] = element2["prof"]
+                    #kids.append(kid.copy())
                     kid1["requirement"] = element2["requirement"]
                     kids.append(kid1.copy())
                     kid2["startH"] = element2["startH"]
@@ -242,24 +261,48 @@ class GeneticAlgorithm:
                     kid2["endH"] = element2["startH"] + kid2["hour"]
                     kid2["endMin"] = element2["startMin"] + kid2["min"]
                     kids.append(kid2.copy())
-        print("new population mumbers : ",len(kids)) 
+                    kid3["day"] = element2["day"]
+                    kids.append(kid3.copy())
+                elif element1["requirementId"] == element2["requirementId"] :
+                    kid1["requirement"] = element2["requirement"]
+                    kids.append(kid1.copy())
+                    kid2["startH"] = element2["startH"]
+                    kid2["startMin"] = element2["startMin"]
+                    kid2["endH"] = element2["startH"] + kid2["hour"]
+                    kid2["endMin"] = element2["startMin"] + kid2["min"]
+                    kids.append(kid2.copy())
+                    kid3["day"] = element2["day"]
+                    kids.append(kid3.copy())
+                else:
+                    kid2["startH"] = element2["startH"]
+                    kid2["startMin"] = element2["startMin"]
+                    kid2["endH"] = element2["startH"] + kid2["hour"]
+                    kid2["endMin"] = element2["startMin"] + kid2["min"]
+                    kids.append(kid2.copy())
+                    kid3["day"] = element2["day"]
+                    kids.append(kid3.copy())
+
+
+        #print("new population mumbers : ",len(kids)) 
         #-------------------------------------------------------------------------------------------- 
         self.ordred_population = []
         for element in kids :
             if not element in self.ordred_population and not element in self.saved_population :
                 self.ordred_population.append(element.copy())
+
         for element in self.saved_population :
-            self.ordred_population.append(element.copy())
-        print("new population count : ",len(self.ordred_population))
+            if not element in self.ordred_population :
+                self.ordred_population.append(element.copy())
+        #print("new population count : ",len(self.ordred_population))
         #-------------------------------------------------------------------------------------------- 
         self.temp_planning = []
         for session in self.sessions :
             if session["keep"] and session["type"] == 0 :
                 self.temp_planning.append(session.copy())
-        print("cours copied : ",len(self.temp_planning))
+        #print("cours copied : ",len(self.temp_planning))
         #--------------------------------------------------------------------------------------------   
         random.shuffle(self.ordred_population)
-        self.ordred_population = sorted(self.ordred_population, key=lambda x: ( x['startH'] , x['startMin'], x['hour'] ),reverse=True)
+        self.ordred_population = sorted(self.ordred_population, key=lambda x: ( x['startH']  ),reverse=False)
         
 
     def execute_mutation(self): 
@@ -332,7 +375,7 @@ class GeneticAlgorithm:
             if day == 3 :
                 number = random.randint(8,11)
             else :
-                while (number == 12 and hour > 1 )  or number == 13 or (hour > 1  and number == 16  )  or (type  == 0 and number > 14 ) :
+                while (number == 12 and hour > 1 )  or number == 13 or (hour > 1  and number == 16  )  :
                         number = random.randint(8,16)
 
         return number       

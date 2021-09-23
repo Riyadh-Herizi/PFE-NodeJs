@@ -543,6 +543,23 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+  
+    test: async (req, res) => {
+        const profs = await Users.findAll({
+            where: { role: 1 },
+            include: [{
+                model: Positions,
+                required: false,
+            },
+            {
+                model: PositionsCours,
+                required: false,
+            }]
+        })
+        
+        res.json(profs)
+
+    },
     makePlanning: async (req, res) => {
         try {
             const body = req.body;
@@ -696,6 +713,7 @@ var ControllerFunctions = {
                     auto: 1, groupId: group.id, name: "Planning " + section.year.name + "- " + section.name + " "
                         + group.name, semesterId: body.semester, statut: 0
                 })
+
                 res.status(200).json({ message: "Votre demande est en cours de traitement, veuillez patienter" })
 
                 axios.post('http://127.0.0.1:4001/make_planning',
@@ -737,10 +755,14 @@ var ControllerFunctions = {
 
 
                             }
-                            await Plannings.update(
+
+                            setTimeout( async() => {
+                                  await Plannings.update(
                                 { statut: 1 },
                                 { where: { id: planning.id } }
                             )
+                            },10000)
+                          
 
                         }
 

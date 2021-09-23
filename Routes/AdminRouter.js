@@ -54,7 +54,7 @@ router.post('/deletemodule', isAdmin , AdminController.deleteModule)
 router.post('/deleteplanning', isAdmin , AdminController.deletePlanning)
 
 router.post('/deleteplanningexam', isAdmin , AdminController.deletePlanningExam)
-
+router.post('/test' , AdminController.test)
 
 router.post('/deleterequirement', isAdmin , AdminController.deleteRequirement)
 router.post('/deletesubrequirement', isAdmin , AdminController.deleteSubRequirement)

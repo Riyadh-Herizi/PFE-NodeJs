@@ -142,6 +142,7 @@ sequelize.sync({ force: false })
             console.log('Connection has been established successfully.');
             const admin = await Users.findOne({ where: { username: "d.bensaber" } })
             if (!admin) {
+                
                 const random = await bcrypt.genSalt(10);
                 const Hashedpassword = await bcrypt.hash("12345678", random);
                 await Users.create({ email: "d.amarbensaber@esi-sba.dz", firstname: "Dr.Djamel", lastname: "Amar Ben Saber", role: 0, username: "d.bensaber", password: Hashedpassword, type: "NO" })
@@ -164,7 +165,12 @@ sequelize.sync({ force: false })
                 const k_sail = await Users.create({ email: "k.sail@esi-sba.dz", firstname: "Karima", lastname: "SAIL", role: 1, username: "k.sail", password: Hashedpassword, type: "MCB" })
                 const m_mechab = await Users.create({ email: "m.mechab@esi-sba.dz", firstname: "Mustapha", lastname: "MECHAB", role: 1, username: "m.mechab", password: Hashedpassword, type: "Pr" })
                 const h_mami = await Users.create({ email: "h.mami@esi-sba.dz", firstname: "Hind", lastname: "MAMI", role: 1, username: "h.mami", password: Hashedpassword, type: "MCB" })
-                const m_omar = await Users.create({ email: "o.mahdaoui@esi-sba.dz", firstname: "OMAR", lastname: "Mahdaoui", role: 1, username: "o.mahdaoui", password: Hashedpassword, type: "MCB" })
+                const m_omar = await Users.create({ email: "o.mahdaoui@esi-sba.dz", firstname: "Omar", lastname: "MAHDAOUI", role: 1, username: "o.mahdaoui", password: Hashedpassword, type: "MCB" })
+                const r_bouazaoui = await Users.create({ email: "r.bouazaoui@esi-sba.dz", firstname: "Rania", lastname: "BOUAZAOUI", role: 1, username: "o.bouabdella", password: Hashedpassword, type: "MCA" })
+                const o_bouabdellah = await Users.create({ email: "o.bouabdellah@esi-sba.dz", firstname: "OMAR", lastname: "BOUABDELLAH", role: 1, username: "o.bouabdella", password: Hashedpassword, type: "MCA" })
+                const a_rahmoun = await Users.create({ email: "a.rahmoun@esi-sba.dz", firstname: "Abdellatif", lastname: "RAHMOUN", role: 1, username: "a.rahmoun", password: Hashedpassword, type: "Pr" })
+                const h_naoum = await Users.create({ email: "h.naoum@esi-sba.dz", firstname: "Hanane", lastname: "NAOUM", role: 1, username: "h.naoum", password: Hashedpassword, type: "MCB" })
+                const r_mazzouni = await Users.create({ email: "r.mazzouni@esi-sba.dz", firstname: "Roumaisa", lastname: "MAZZOUNI", role: 1, username: "h.naoum", password: Hashedpassword, type: "MCB" })
 
                 // LES ANNEES ET LES SEMESTRES DE ESI SBA
                 const year1 = await Years.create({ name: "1 CPI", email: "etudiant1@esi-sba.dz" })
@@ -189,7 +195,8 @@ sequelize.sync({ force: false })
                 await Semesters.create({ name: "Semestre 1", yearId: year7.id })
                 await Semesters.create({ name: "Semestre 2", yearId: year7.id })
 
-                const salles_td = await Requirements.create({ name: "Salles TD" })
+                const salles_td_p = await Requirements.create({ name: "Salles TD - Supérieure" })
+                const salles_td_s = await Requirements.create({ name: "Salles TD - Préparatoire" })
                 const amphis = await Requirements.create({ name: "Amphis" })
                 const salles_tp = await Requirements.create({ name: "Salles TP" })
 
@@ -198,26 +205,27 @@ sequelize.sync({ force: false })
                 const anaylse1 = await Modules.create({ name: "Anaylse 1", coefficient: 5, examenH: 2, examenMin: 0, semesterId: 1 })
                 const analylse1_cour = await Cours.create({ name: "Cours - Anaylse 1", hour: 2, min: 0, moduleId: anaylse1.id, requirementId: amphis.id })
                 const analylse1_cour2 = await Cours.create({ name: "Cours - Anaylse 1", hour: 1, min: 0, moduleId: anaylse1.id, requirementId: amphis.id })
-                const analylse1_td = await TDP.create({ name: "TD - Anaylse 1", hour: 2, min: 0, moduleId: anaylse1.id, requirementId: salles_td.id })
+                const analylse1_td = await TDP.create({ name: "TD - Anaylse 1", hour: 2, min: 0, moduleId: anaylse1.id, requirementId: salles_td_p.id })
+                
                 ////////////////////////////////////////////////////////////////////////////////
                 const archi1 = await Modules.create({ name: "Archi 1", coefficient: 4, examenH: 2, examenMin: 0, semesterId: 1 })
                 const archi1_cour = await Cours.create({ name: "Cours - Archi 1", hour: 2, min: 0, moduleId: archi1.id, requirementId: amphis.id })
                 const archi1_cour2 = await Cours.create({ name: "Cours - Archi 1", hour: 1, min: 0, moduleId: archi1.id, requirementId: amphis.id })
 
-                const archi1_td = await TDP.create({ name: "TD - Archi 1", hour: 2, min: 0, moduleId: archi1.id, requirementId: salles_td.id })
+                const archi1_td = await TDP.create({ name: "TD - Archi 1", hour: 2, min: 0, moduleId: archi1.id, requirementId: salles_td_p.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const algo1 = await Modules.create({ name: "Algorithmique 1", coefficient: 5, examenH: 2, examenMin: 0, semesterId: 1 })
                 const algo1_cour = await Cours.create({ name: "Cours - Algorithmique 1", hour: 2, min: 0, moduleId: algo1.id, requirementId: amphis.id })
-                const algo1_td = await TDP.create({ name: "TD - Algorithmique 1", hour: 2, min: 0, moduleId: algo1.id, requirementId: salles_td.id })
+                const algo1_td = await TDP.create({ name: "TD - Algorithmique 1", hour: 2, min: 0, moduleId: algo1.id, requirementId: salles_td_p.id })
                 const algo1_tp = await TDP.create({ name: "TP - Algorithmique 1", hour: 2, min: 0, moduleId: algo1.id, requirementId: salles_tp.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const elect = await Modules.create({ name: "Electricité ", coefficient: 3, examenH: 2, examenMin: 0, semesterId: 1 })
                 const elect_cour = await Cours.create({ name: "Cours - Electricité", hour: 2, min: 0, moduleId: elect.id, requirementId: amphis.id })
-                const elect_td = await TDP.create({ name: "TD - Electricité", hour: 2, min: 0, moduleId: elect.id, requirementId: salles_td.id })
+                const elect_td = await TDP.create({ name: "TD - Electricité", hour: 2, min: 0, moduleId: elect.id, requirementId: salles_td_p.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const algebre1 = await Modules.create({ name: "Algébre 1", coefficient: 3, examenH: 2, examenMin: 0, semesterId: 1 })
                 const algebre1_cour = await Cours.create({ name: "Cours - Algébre 1", hour: 2, min: 0, moduleId: algebre1.id, requirementId: amphis.id })
-                const algebre1_td = await TDP.create({ name: "TD - Algébre 1", hour: 2, min: 0, moduleId: algebre1.id, requirementId: salles_td.id })
+                const algebre1_td = await TDP.create({ name: "TD - Algébre 1", hour: 2, min: 0, moduleId: algebre1.id, requirementId: salles_td_p.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const btw = await Modules.create({ name: "Bureautique et web", coefficient: 1, examenH: 1, examenMin: 30, semesterId: 1 })
                 const btw_tp = await TDP.create({ name: "TP - Bureautique et web", hour: 2, min: 0, moduleId: btw.id, requirementId: salles_tp.id })
@@ -226,7 +234,7 @@ sequelize.sync({ force: false })
                 const systeme1_tp = await TDP.create({ name: "TP - Systèmes d'exploitation 1", hour: 2, min: 0, moduleId: systeme1.id, requirementId: salles_tp.id })
                 ////////////////////////////////////////////////////////////////////////////////
                 const tee = await Modules.create({ name: "TEE", coefficient: 2, examenH: 1, examenMin: 30, semesterId: 1 })
-                const tee_td = await TDP.create({ name: "TD - TEE", hour: 2, min: 0, moduleId: tee.id, requirementId: salles_td.id })
+                const tee_td = await TDP.create({ name: "TD - TEE", hour: 2, min: 0, moduleId: tee.id, requirementId: salles_td_p.id })
                  
                 // LES AMPHI
                 const amphiA = await SubRequirements.create({ name: "Amphi A", requirementId: amphis.id })
@@ -236,26 +244,26 @@ sequelize.sync({ force: false })
                 await SubRequirements.create({ name: "Amphi E", requirementId: amphis.id })
                 
                 // LES SALLES TD
-                await SubRequirements.create({ name: "Salle TD 01", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 02", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 03", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 04", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 05", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 06", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 07", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 08", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 09", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD 10", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD A01", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD A02", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD A03", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD A04", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C01", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C02", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C03", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C04", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C05", requirementId: salles_td.id })
-                await SubRequirements.create({ name: "Salle TD C06", requirementId: salles_td.id })
+                await SubRequirements.create({ name: "Salle TD 01", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 02", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 03", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 04", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 05", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 06", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 07", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 08", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 09", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD 10", requirementId: salles_td_p.id })
+                await SubRequirements.create({ name: "Salle TD A01", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD A02", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD A03", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD A04", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C01", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C02", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C03", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C04", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C05", requirementId: salles_td_s.id })
+                await SubRequirements.create({ name: "Salle TD C06", requirementId: salles_td_s.id })
 
                 // LES SALLES TP
                 await SubRequirements.create({ name: "Salle TP 01", requirementId: salles_tp.id })
@@ -302,20 +310,27 @@ sequelize.sync({ force: false })
                 await ResponsablesTDP.create({ userId: n_amroun.id, tdpId: analylse1_td.id })
                 await ResponsablesTDP.create({ userId: z_helal.id, tdpId: analylse1_td.id })
                 await ResponsablesTDP.create({ userId: z_mekri.id, tdpId: analylse1_td.id })
-
+                await ResponsablesTDP.create({ userId: o_bouabdellah.id, tdpId: analylse1_td.id })
                 // Archi
                 await Responsables.create({ userId: h_badsi.id, courId: archi1_cour.id })
                 await Responsables.create({ userId: h_badsi.id, courId: archi1_cour2.id })
                 await ResponsablesTDP.create({ userId: m_smahat.id, tdpId: archi1_td.id })
                 await ResponsablesTDP.create({ userId: h_badsi.id, tdpId: archi1_td.id })
-                
+                await ResponsablesTDP.create({ userId: a_rahmoun.id, tdpId: archi1_td.id })
+
                 // Algo
                 await Responsables.create({ userId: n_simohamed.id, courId: algo1_cour.id })
                 await ResponsablesTDP.create({ userId: n_simohamed.id, tdpId: algo1_td.id })
                 await ResponsablesTDP.create({ userId: l_allal.id, tdpId: algo1_td.id })
                 await ResponsablesTDP.create({ userId: n_keskes.id, tdpId: algo1_td.id })
+
+
+
                 await ResponsablesTDP.create({ userId: n_keskes.id, tdpId: algo1_tp.id })
                 await ResponsablesTDP.create({ userId: l_allal.id, tdpId: algo1_tp.id })
+                await ResponsablesTDP.create({ userId: r_mazzouni.id, tdpId: algo1_tp.id })
+                await ResponsablesTDP.create({ userId: h_naoum.id, tdpId: algo1_tp.id })
+
 
                 // BTW 
                 await ResponsablesTDP.create({ userId: m_bekkouche.id, tdpId: btw_tp.id })
@@ -329,12 +344,14 @@ sequelize.sync({ force: false })
                
                 // Algebre 
                 await Responsables.create({ userId: m_mechab.id, courId: algebre1_cour.id })
-                await ResponsablesTDP.create({ userId: m_mechab.id, tdpId: algebre1_td.id })
+               
                 await ResponsablesTDP.create({ userId: wc_mechab.id, tdpId: algebre1_td.id })
-
+                await ResponsablesTDP.create({ userId: r_bouazaoui.id, tdpId: algebre1_td.id })
+                await ResponsablesTDP.create({ userId: z_helal.id, tdpId: algebre1_td.id })
                 // Systeme 
                 await ResponsablesTDP.create({ userId: h_badsi.id, tdpId: systeme1_tp.id })
                 await ResponsablesTDP.create({ userId: m_azza.id, tdpId: systeme1_tp.id })
+                await ResponsablesTDP.create({ userId: r_mazzouni.id, tdpId: algo1_tp.id })
                 
                 // tee 
                 await ResponsablesTDP.create({ userId: h_mami.id, tdpId: tee_td.id })

@@ -19,7 +19,7 @@ function compare(a, b) {
 }
 var ControllerFunctions = {
 
-    getPlannings : async(req,res) => {
+getPlannings : async(req,res) => {
         try {
            const body = req.body
             const plannings1 = await Plannings.findAll({ attributes: ['id'] , include : {
@@ -85,8 +85,7 @@ getYears: async (req, res) => {
         console.log(err)
         res.status(400).json({ error: "Ops , server down" })
     }
-}
-,
+},
 getPlanning: async (req, res) => {
     try {
         const days = [[], [], [], [], [], [], []]
@@ -191,7 +190,6 @@ getExamsPlannings: async (req, res) => {
         res.status(400).json({ error: "Ops , server down" })
     }
 },
-
 getExamPlanning: async (req, res) => {
     try {
         const body = req.body;
@@ -223,8 +221,8 @@ getExamPlanning: async (req, res) => {
         res.status(400).json({ error: "Ops , server down" })
     }
 },
-    getPlanningGeneral: async (req, res) => {
-        try {
+getPlanningGeneral: async (req, res) => {
+    try {
             const body = req.body
             const days = [[], [], [], [], [], [], []]
             const positions = await Positions.findAll({
@@ -356,11 +354,8 @@ getExamPlanning: async (req, res) => {
             console.log(err)
             res.status(400).json({ error: "Ops , server down" })
         }
-    },
-    
-
-
-    logout: async (req, res) => {
+},
+logout: async (req, res) => {
         const body = req.body;
         if (!body.refreshToken) {
             return res.status(401).send({ error: "Not authenticated" })
@@ -372,7 +367,7 @@ getExamPlanning: async (req, res) => {
         user.refreshtoken = "";
         await user.save()
         res.status(200).send({ message: "Logged out" })
-    }
+}
 
 }
 module.exports = ControllerFunctions;
