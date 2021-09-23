@@ -30,6 +30,7 @@ function isAdmin(req, res, next) {
 
 }
 var AdminController = require("../Controllers/AdminController")
+
 router.post('/getproflist', isAdmin , AdminController.getProfsResponsable)
 router.post('/getresponsables', isAdmin , AdminController.getResponsables)
 router.post('/addresponsable', isAdmin , AdminController.addResponsable)
@@ -45,22 +46,18 @@ router.post('/makeexams', isAdmin , AdminController.makeExams)
 router.post('/mail', isAdmin , AdminController.mail)
 router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
 router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
-
-
+router.post('/generalplanning', isAdmin , AdminController.getPlanningGeneral)
 router.post('/deleteprof', isAdmin , AdminController.deleteProf)
 router.post('/deletetdp', isAdmin , AdminController.deleteTDP)
 router.post('/deletecours', isAdmin , AdminController.deleteCours)
 router.post('/deletemodule', isAdmin , AdminController.deleteModule)
 router.post('/deleteplanning', isAdmin , AdminController.deletePlanning)
-
 router.post('/deleteplanningexam', isAdmin , AdminController.deletePlanningExam)
-
 router.post('/deleterequirement', isAdmin , AdminController.deleteRequirement)
 router.post('/deletesubrequirement', isAdmin , AdminController.deleteSubRequirement)
 router.post('/deletegroup', isAdmin , AdminController.deleteGroup)
 router.post('/deletesection', isAdmin , AdminController.deleteSection)
 router.post('/deleteresponsable', isAdmin , AdminController.deleteResponsable)
-
 router.post('/add', isAdmin , AdminController.add)
 router.post('/addsection', isAdmin , AdminController.addSection)
 router.post('/addsubrequirement', isAdmin , AdminController.addSubRequirement)
