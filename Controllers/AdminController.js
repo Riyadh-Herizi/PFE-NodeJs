@@ -2,7 +2,6 @@ const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, 
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
-const Planning = require("../Models/Planning");
 const moment = require("moment")
 var nodemailer = require('nodemailer');
 

@@ -1,6 +1,33 @@
-const { Users } = require("../Sequelize");
+const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements, ExamsPlannings, ExamsPositions } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+function compare(a, b) {
+    if (a.startH < b.startH) {
+        return -1;
+    }
+    if (a.startH > b.startH) {
+        return 1;
+    }
+    else if (a.startMin < b.startMin) {
+        return -1;
+    }
+    if (a.startMin > b.startMin) {
+        return 1;
+    }
+    return 0;
+}
+function compare_modules(a, b) {
+    if (a.coefficient > b.coefficient) {
+        return -1;
+    }
+    if (a.coefficient < b.coefficient) {
+        return 1;
+    }
+
+
+    return 0;
+}
 
  const generateAccessToken = ( user ) => {
     return jwt.sign({ role: user.role, firstname: user.firstname, lastname: user.lastname, id: user.id, username: user.username, type: user.type }, process.env.TOKEN, { expiresIn: '1d' });
@@ -44,7 +71,7 @@ var ControllerFunctions = {
         try {
             const days = [[], [], [], [], [], [], []]
             const planning = await Plannings.findOne({
-                where: { id: req.body.planningId }, include: [
+                where: {  semesterId: req.body.semester , groupId : req.body.group }, include: [
 
                     {
                         model: Positions,
@@ -123,17 +150,46 @@ var ControllerFunctions = {
             }
             for (let i = 0; i < 7; i++)
                 days[i].sort(compare)
-            res.status(200).json({ days: days, name: planning.name })
-        }
+
+            if (planning) 
+            return  res.status(200).json({ days: days, name: planning.name })
+            else 
+            return  res.status(400).json({  })
+            }   
         catch (err) {
             console.log(err)
             res.status(400).json({ error: "Ops , server down" })
         }
     },
-    getOnePlanning: async (req, res) => {
+    getExamPlanning: async (req, res) => {
         try {
-            const planning = await Plannings.findOne({ where: { semesterId: req.body.semester , groupId : req.body.group } })
-            res.status(200).json(planning)
+            const body = req.body;
+            if (!(body.id)) {
+                return res.status(450).send({ error: "Data not formatted properly" });
+            }
+            const positions = await ExamsPlannings.findOne({
+                where: { semesterId : body.semester , emd : body.emd },
+                include: [
+
+                    {
+                        model: ExamsPositions,
+                        required: true,
+                        include: {
+                            model: Modules,
+                            required: true
+                        }
+                    }
+
+                ]
+
+
+            }
+            )
+            if (positions)
+            res.status(200).json(positions)
+            else 
+            res.status(400).json({})
+           
         }
         catch (err) {
             console.log(err)
