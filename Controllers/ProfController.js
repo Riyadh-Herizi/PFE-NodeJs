@@ -223,137 +223,149 @@ getExamPlanning: async (req, res) => {
 },
 getPlanningGeneral: async (req, res) => {
     try {
-            const body = req.body
-            const days = [[], [], [], [], [], [], []]
-            const positions = await Positions.findAll({
-                 include: [
-                             {
-                                model: Users,
-                                required: true,
-                                where : { id : body.id}
-                            }
-                            , 
-                            {
-                                model: TDP,
-                                required: true
-                            }
-                            ,
-                            {
-                                model: SubRequirements,
-                                required: true
-                            }
-                            ,
-                            {
-                                model: Plannings,
-                                required: true,
-                                include :
-                                {
-                                    model: Groups,
-                                    required: true,
-                                    include :
-                                {
-                                    model: Sections,
-                                    required: true
-                                }
-                                }
-                            }
-                        ]
-                    })
-                  
-                    
-                    const positionscours = await PositionsCours.findAll({
-                       
-                        include: [
-                                    {
-                                       model: Users,
-                                       required: true,
-                                       where : { id : body.id}
-                                   }
-                                   , 
-                                   {
-                                       model: Cours,
-                                       required: true
-                                   }
-                                   ,
-                                        {
-                                            model: SubRequirements,
-                                            required: true
-                                        }
-                                        ,
-                                        {
-                                            model: Plannings,
-                                            required: true,
-                                            include :
-                                            {
-                                                model: Groups,
-                                                required: true,
-                                                include :
-                                            {
-                                                model: Sections,
-                                                required: true
-                                            }
-                                            }
-                                        }
-                               ]
-                           })
-           exist = []
+        const body = req.body
+        const semesters = await Semesters.findAll({ where: { name: { [Op.like]: '%'+body.semester+'%' } }, attributes: ['id'] })
 
-            for (var i = 0; i < positions.length; i++) {
-                days[positions[i].day].push({
-                    startH: positions[i].startH,
-                    endH: positions[i].endH,
-                    startMin: positions[i].startMin,
-                    endMin: positions[i].endMin,
-                    target : positions[i].planning.group.name,
-                    requirement: positions[i].subrequirement.name,
-                    name: positions[i].tdp.name,
-                    prof: positions[i].user.firstname + " " + positions[i].user.lastname
-                })
-            }
-          
-            for (var i = 0; i < positionscours.length; i++) {
-                if (!exist.includes(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)) {
+        var id_semesters = [];
+
+        semesters.map((element) => {
+            id_semesters.push(element.id)
+        })
+
+
+
+        const days = [[], [], [], [], [], [], []]
+        const positions = await Positions.findAll({
+            include: [
+                {
+                    model: Users,
+                    required: true,
+                    where: { id: body.id }
+                }
+                ,
+                {
+                    model: TDP,
+                    required: true
+                }
+                ,
+                {
+                    model: SubRequirements,
+                    required: true
+                }
+                ,
+                {
+                    model: Plannings,
+                    required: true,
+                    include:
+                    {
+                        model: Groups,
+                        required: true,
+                        include:
+                        {
+                            model: Sections,
+                            required: true,
+                            where :{ id : { [Op.in]: id_semesters }}
+                        }
+                    }
+                }
+            ]
+        })
+
+
+        const positionscours = await PositionsCours.findAll({
+
+            include: [
+                {
+                    model: Users,
+                    required: true,
+                    where: { id: body.id }
+                }
+                ,
+                {
+                    model: Cours,
+                    required: true
+                }
+                ,
+                {
+                    model: SubRequirements,
+                    required: true
+                }
+                ,
+                {
+                    model: Plannings,
+                    required: true,
+                    include:
+                    {
+                        model: Groups,
+                        required: true,
+                        include:
+                        {
+                            model: Sections,
+                            required: true,
+                            where :{ id : { [Op.in]: id_semesters }}
+                        }
+                    }
+                }
+            ]
+        })
+        exist = []
+
+        for (var i = 0; i < positions.length; i++) {
+            days[positions[i].day].push({
+                startH: positions[i].startH,
+                endH: positions[i].endH,
+                startMin: positions[i].startMin,
+                endMin: positions[i].endMin,
+                target: positions[i].planning.group.name,
+                requirement: positions[i].subrequirement.name,
+                name: positions[i].tdp.name,
+                prof: positions[i].user.firstname + " " + positions[i].user.lastname
+            })
+        }
+
+        for (var i = 0; i < positionscours.length; i++) {
+            if (!exist.includes(positionscours[i].courId + "-" + positionscours[i].planning.group.section.name)) {
                 days[positionscours[i].day].push({
-                    startH:positionscours[i].startH,
-                    endH:positionscours[i].endH,
-                    target : positionscours[i].planning.group.section.name,
-                    startMin:positionscours[i].startMin,
-                    endMin:positionscours[i].endMin,
-                    requirement:positionscours[i].subrequirement.name,
-                    name:positionscours[i].cour.name,
-                    prof:positionscours[i].user.firstname + " " +positionscours[i].user.lastname
+                    startH: positionscours[i].startH,
+                    endH: positionscours[i].endH,
+                    target: positionscours[i].planning.group.section.name,
+                    startMin: positionscours[i].startMin,
+                    endMin: positionscours[i].endMin,
+                    requirement: positionscours[i].subrequirement.name,
+                    name: positionscours[i].cour.name,
+                    prof: positionscours[i].user.firstname + " " + positionscours[i].user.lastname
 
                 })
-                exist.push(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)
-                }
-                else {
-                    console.log(exist)
-                    console.log("ID : " +positionscours[i].courId)
-                    console.log("Position : " +positionscours[i].cour.name)
-                    console.log("Time start : " +positionscours[i].startH + ":" +positionscours[i].startMin)
-                    console.log("Time end : " +positionscours[i].endH + ":" +positionscours[i].endMin)
-                    console.log("Salle : " +positionscours[i].subrequirement.name)
-                    console.log("day : " +positionscours[i].day)
-                    console.log("Prof : " +positionscours[i].user.firstname + " " +positionscours[i].user.lastname)
-                }
-                
+                exist.push(positionscours[i].courId + "-" + positionscours[i].planning.group.section.name)
             }
-            for (let i = 0; i < 7; i++)
-                days[i].sort(compare)
+            else {
+                console.log(exist)
+                console.log("ID : " + positionscours[i].courId)
+                console.log("Position : " + positionscours[i].cour.name)
+                console.log("Time start : " + positionscours[i].startH + ":" + positionscours[i].startMin)
+                console.log("Time end : " + positionscours[i].endH + ":" + positionscours[i].endMin)
+                console.log("Salle : " + positionscours[i].subrequirement.name)
+                console.log("day : " + positionscours[i].day)
+                console.log("Prof : " + positionscours[i].user.firstname + " " + positionscours[i].user.lastname)
+            }
 
-                for (let i = 0; i < 7; i++)    
-                for (let j = 0; j < days[i].length; j++)
+        }
+        for (let i = 0; i < 7; i++)
+            days[i].sort(compare)
+
+        for (let i = 0; i < 7; i++)
+            for (let j = 0; j < days[i].length; j++)
 
                 console.log(days[i][j].name)
-            res.status(200).json({ days: days, name: "Planning générale" })
+        res.status(200).json({ days: days, name: "Planning générale" })
 
 
 
-        }
-        catch (err) {
-            console.log(err)
-            res.status(400).json({ error: "Ops , server down" })
-        }
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json({ error: "Ops , server down" })
+    }
 },
 logout: async (req, res) => {
         const body = req.body;

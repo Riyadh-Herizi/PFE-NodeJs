@@ -48,6 +48,8 @@ router.post('/mailyear', isAdmin , AdminController.mail_year)
 ////////////////
 router.post('/mailprofs', isAdmin , AdminController.mail_profs)
 ////////////////
+router.post('/mailexams', isAdmin , AdminController.mail_exams)
+////////////////
 router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
 router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
 router.post('/generalplanning', isAdmin , AdminController.getPlanningGeneral)

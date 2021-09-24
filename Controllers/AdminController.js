@@ -471,6 +471,41 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    mail_exams: async (req, res) => {
+        try {
+
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'esiplanning22@gmail.com',
+                    pass: 'esi12345678'
+                }
+            });
+            const year = await Years.findOne({where : {id : req.body.year}})
+            var mailOptions = {
+                    from: 'esiplanning22@gmail.com',
+                    to: 'riyadh.herizi1998@gmail.com',
+                    subject: "Emploi du temps d'examens "+year.name,
+                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter l'emploi du temps d'examens sur le site web :</p><br>"+
+                    "<div class='display:flex; justify-content:flex-end;'><a style=' background-color: #008CBA; border: none;color: white;padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;' href='http://localhost:8080'>ESI PLANNER</a></div><br><br><br> Cordialement."
+                };
+            
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    res.status(400).json({ error: "Ops" })
+
+                } else {
+                    console.log('Email sent: ' + info.response);
+                    res.status(200).send({})
+                }
+            });
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     mail_year: async (req, res) => {
         try {
 
@@ -486,7 +521,7 @@ var ControllerFunctions = {
                     from: 'esiplanning22@gmail.com',
                     to: 'riyadh.herizi1998@gmail.com',
                     subject: 'Emploi du temps de '+year.name,
-                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le website :</p><br>"+
+                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le site web :</p><br>"+
                     "<div class='display:flex; justify-content:flex-end;'><a style=' background-color: #008CBA; border: none;color: white;padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;' href='http://localhost:8080'>ESI PLANNER</a></div><br><br><br> Cordialement."
                 };
             
@@ -520,7 +555,7 @@ var ControllerFunctions = {
                     from: 'esiplanning22@gmail.com',
                     to: 'riyadh.herizi1998@gmail.com',
                     subject: 'Emploi du temps',
-                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le website :</p><br>"+
+                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le site web :</p><br>"+
                     "<div class='display:flex; justify-content:flex-end;'><a style=' background-color: #008CBA; border: none;color: white;padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;' href='http://localhost:8080'>ESI PLANNER</a></div><br><br><br> Cordialement."
                 };
 
@@ -581,6 +616,16 @@ var ControllerFunctions = {
     getPlanningGeneral: async (req, res) => {
         try {
             const body = req.body
+            const semesters = await Semesters.findAll({ where: { name: { [Op.like]: '%'+body.semester+'%' } }, attributes: ['id'] })
+
+            var id_semesters = [];
+
+            semesters.map((element) => {
+                id_semesters.push(element.id)
+            })
+
+
+
             const days = [[], [], [], [], [], [], []]
             const positions = await Positions.findAll({
                 include: [
@@ -610,7 +655,8 @@ var ControllerFunctions = {
                             include:
                             {
                                 model: Sections,
-                                required: true
+                                required: true,
+                                where :{ id : { [Op.in]: id_semesters }}
                             }
                         }
                     }
@@ -647,7 +693,8 @@ var ControllerFunctions = {
                             include:
                             {
                                 model: Sections,
-                                required: true
+                                required: true,
+                                where :{ id : { [Op.in]: id_semesters }}
                             }
                         }
                     }
