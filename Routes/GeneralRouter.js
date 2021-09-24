@@ -29,4 +29,13 @@ router.post('/login', GeneralController.login)
 router.post('/refresh', GeneralController.refresh)
 router.post('/getuser', isLoggedIn , GeneralController.getUserInfo)
 
+router.post('/getyears' , GeneralController.getYears)
+router.post('/getsemesters',GeneralController.getSemesters)
+router.post('/getsections', GeneralController.getSections)
+router.post('/getgroups',GeneralController.getGroups)
+router.post('/getplanning',GeneralController.getPlanning)
+router.post('/getoneplannings',GeneralController.getOnePlanning) // group + semester
+
+
+
 module.exports = router;
