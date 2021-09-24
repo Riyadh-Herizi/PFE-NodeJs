@@ -43,7 +43,11 @@ router.post('/updatesubrequirement', isAdmin , AdminController.updateSubRequirem
 router.post('/updategroup', isAdmin , AdminController.updateGroup)
 router.post('/updatesection', isAdmin , AdminController.updateSection)
 router.post('/makeexams', isAdmin , AdminController.makeExams)
-router.post('/mail', isAdmin , AdminController.mail)
+/////////////////
+router.post('/mailyear', isAdmin , AdminController.mail_year)
+////////////////
+router.post('/mailprofs', isAdmin , AdminController.mail_profs)
+////////////////
 router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
 router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
 router.post('/generalplanning', isAdmin , AdminController.getPlanningGeneral)

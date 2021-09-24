@@ -80,19 +80,19 @@ class GeneticAlgorithm:
                     print("--------------------------------------------------")
                     valide = self.evalute_population() 
                     
-                    for element in self.temp_planning :
-                       print(element["name"] ," ", element["startH"],"-->" ,element["endH"], " DAY -->" ,element["day"], " prof : ",element["prof"]["user"]["lastname"])
+                    #for element in self.temp_planning :
+                       #print(element["name"] ," ", element["startH"],"-->" ,element["endH"], " DAY -->" ,element["day"], " prof : ",element["prof"]["user"]["lastname"])
                           
-                    if valide :
-                        break
-                    else :  
-                        mutation_counter-=1
-                        if mutation_counter == 0 :
-                            self.execute_mutation() 
-                            mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
-                        else :
-                            self.execute_crossover() 
-                        counter-=1
+                    
+                    print("Planning Found : ",len(self.plannings))
+                      
+                    mutation_counter-=1
+                    if mutation_counter == 0 :
+                        self.execute_mutation() 
+                        mutation_counter = self.MAX_ETIRATIONS_FOR_MUTATION
+                    else :
+                        self.execute_crossover() 
+                    counter-=1
                 
     def initial_population(self):
         self.temp_planning = []
@@ -139,15 +139,8 @@ class GeneticAlgorithm:
         req =  self.check_requirement(element)
         prof =  self.check_prof(element)
         check = self.check_add_for_planning_temp(element)  
-        prof_charge =  1
-        if element["name"] == "TP - Systèmes d'exploitation 1" :
-            print(element["name"] ," ", element["startH"],"-->" ,element["endH"], " DAY -->" ,element["day"], " prof : ",element["prof"]["user"]["lastname"])
-            if req == 0 :
-                print("REQ Problem : TP - Systèmes d'exploitation 1 ")
-            if prof == 0 :
-                print("PROF Problem : TP - Systèmes d'exploitation 1 ")
-            if check == 0 :
-                print("PLACEMENT Problem : TP - Systèmes d'exploitation 1 ")
+        prof_charge =  self.check_charge(element)
+        
        
         fitness_value = req + prof + check + prof_charge
         return  self.FITNESS_REQUIREMENT - fitness_value
@@ -414,3 +407,35 @@ class GeneticAlgorithm:
                 sumH = sumH + element["hour"]
                 sumMin = sumMin + element["min"]
         return sumH + (sumMin / 60)
+    
+
+    def check_charge(self,element):
+        prof = element["prof"]["user"]
+        current_charge = 0
+        for position in prof["positions"] :
+            if "TD " in position["tdp"]["name"] :
+                current_charge = current_charge +(position["tdp"]["hour"] + position["tdp"]["min"] /60) * 0.66
+            elif "TP " in position["tdp"]["name"]:
+                current_charge = current_charge +(position["tdp"]["hour"] + position["tdp"]["min"] /60) * 0.5
+        exist=[]
+        for position in prof["positionscours"] :
+            if not position["courId"] in exist:
+                exist.append(position["courId"])
+                current_charge = current_charge +(position["cour"]["hour"] + position["cour"]["min"] /60) 
+            
+
+        for position in self.temp_planning :
+            if position["prof"]["user"]["id"] == prof["id"]:
+                if position["type"] == 1 :
+                    if "TD " in position["name"] :
+                        current_charge = current_charge +(position["hour"] + position["min"] /60) * 0.66
+                    elif "TP " in position["name"]:
+                        current_charge = current_charge +(position["hour"] + position["min"] /60) * 0.5
+                elif "keep" in position :
+                    if not position["keep"] : 
+                        current_charge = current_charge +(position["hour"] + position["min"] /60) 
+        
+        if current_charge > 6 :
+            return 0
+        else :
+            return 1

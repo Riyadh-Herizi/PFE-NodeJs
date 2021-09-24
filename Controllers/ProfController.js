@@ -304,7 +304,7 @@ getPlanningGeneral: async (req, res) => {
                     endH: positions[i].endH,
                     startMin: positions[i].startMin,
                     endMin: positions[i].endMin,
-                    target : positionscours[i].planning.group.name,
+                    target : positions[i].planning.group.name,
                     requirement: positions[i].subrequirement.name,
                     name: positions[i].tdp.name,
                     prof: positions[i].user.firstname + " " + positions[i].user.lastname

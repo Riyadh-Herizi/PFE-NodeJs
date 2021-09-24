@@ -471,34 +471,69 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
-    mail: async (req, res) => {
+    mail_year: async (req, res) => {
+        try {
+
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'esiplanning22@gmail.com',
+                    pass: 'esi12345678'
+                }
+            });
+            const year = await Years.findOne({where : {id : req.body.year}})
+            var mailOptions = {
+                    from: 'esiplanning22@gmail.com',
+                    to: 'riyadh.herizi1998@gmail.com',
+                    subject: 'Emploi du temps de '+year.name,
+                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le website :</p><br>"+
+                    "<div class='display:flex; justify-content:flex-end;'><a style=' background-color: #008CBA; border: none;color: white;padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;' href='http://localhost:8080'>ESI PLANNER</a></div><br><br><br> Cordialement."
+                };
+            
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    res.status(400).json({ error: "Ops" })
+
+                } else {
+                    console.log('Email sent: ' + info.response);
+                    res.status(200).send({})
+                }
+            });
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    mail_profs: async (req, res) => {
         try {
             var transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
-                  user: 'esiplanning22@gmail.com',
-                  pass: 'esi12345678'
+                    user: 'esiplanning22@gmail.com',
+                    pass: 'esi12345678'
                 }
-              });
-              
+            });
+
             var mailOptions = {
-                from: 'esiplanning22@gmail.com',
-                to: 'riyadh.herizi1998@gmail.com',
-                subject: 'Sending Email using Node.js',
-                text: 'That was easy!'
-              };
+                    from: 'esiplanning22@gmail.com',
+                    to: 'riyadh.herizi1998@gmail.com',
+                    subject: 'Emploi du temps',
+                    html: " <p>Salem , </p><br><p>Nous vous invitons à consulter votre planning sur le website :</p><br>"+
+                    "<div class='display:flex; justify-content:flex-end;'><a style=' background-color: #008CBA; border: none;color: white;padding: 10px 20px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;' href='http://localhost:8080'>ESI PLANNER</a></div><br><br><br> Cordialement."
+                };
 
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    res.status(400).json({ error: "Ops" })
 
-            transporter.sendMail(mailOptions, function(error, info){
-                if (error) { 
-                    res.status(400).json({error : "Ops"})
-               
                 } else {
-                  console.log('Email sent: ' + info.response);
-                  res.status(200).send({})
+                    console.log('Email sent: ' + info.response);
+                    res.status(200).send({})
                 }
-              }); 
-           
+            });
+
         }
         catch (err) {
             console.log(err)
@@ -545,139 +580,139 @@ var ControllerFunctions = {
     },
     getPlanningGeneral: async (req, res) => {
         try {
-                const body = req.body
-                const days = [[], [], [], [], [], [], []]
-                const positions = await Positions.findAll({
-                     include: [
-                                 {
-                                    model: Users,
-                                    required: true,
-                                    where : { id : body.id}
-                                }
-                                , 
-                                {
-                                    model: TDP,
-                                    required: true
-                                }
-                                ,
-                                {
-                                    model: SubRequirements,
-                                    required: true
-                                }
-                                ,
-                                {
-                                    model: Plannings,
-                                    required: true,
-                                    include :
-                                    {
-                                        model: Groups,
-                                        required: true,
-                                        include :
-                                    {
-                                        model: Sections,
-                                        required: true
-                                    }
-                                    }
-                                }
-                            ]
-                        })
-                      
-                        
-                        const positionscours = await PositionsCours.findAll({
-                           
-                            include: [
-                                        {
-                                           model: Users,
-                                           required: true,
-                                           where : { id : body.id}
-                                       }
-                                       , 
-                                       {
-                                           model: Cours,
-                                           required: true
-                                       }
-                                       ,
-                                            {
-                                                model: SubRequirements,
-                                                required: true
-                                            }
-                                            ,
-                                            {
-                                                model: Plannings,
-                                                required: true,
-                                                include :
-                                                {
-                                                    model: Groups,
-                                                    required: true,
-                                                    include :
-                                                {
-                                                    model: Sections,
-                                                    required: true
-                                                }
-                                                }
-                                            }
-                                   ]
-                               })
-               exist = []
-    
-                for (var i = 0; i < positions.length; i++) {
-                    days[positions[i].day].push({
-                        startH: positions[i].startH,
-                        endH: positions[i].endH,
-                        startMin: positions[i].startMin,
-                        endMin: positions[i].endMin,
-                        target : positionscours[i].planning.group.name,
-                        requirement: positions[i].subrequirement.name,
-                        name: positions[i].tdp.name,
-                        prof: positions[i].user.firstname + " " + positions[i].user.lastname
-                    })
-                }
-              
-                for (var i = 0; i < positionscours.length; i++) {
-                    if (!exist.includes(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)) {
+            const body = req.body
+            const days = [[], [], [], [], [], [], []]
+            const positions = await Positions.findAll({
+                include: [
+                    {
+                        model: Users,
+                        required: true,
+                        where: { id: body.id }
+                    }
+                    ,
+                    {
+                        model: TDP,
+                        required: true
+                    }
+                    ,
+                    {
+                        model: SubRequirements,
+                        required: true
+                    }
+                    ,
+                    {
+                        model: Plannings,
+                        required: true,
+                        include:
+                        {
+                            model: Groups,
+                            required: true,
+                            include:
+                            {
+                                model: Sections,
+                                required: true
+                            }
+                        }
+                    }
+                ]
+            })
+
+
+            const positionscours = await PositionsCours.findAll({
+
+                include: [
+                    {
+                        model: Users,
+                        required: true,
+                        where: { id: body.id }
+                    }
+                    ,
+                    {
+                        model: Cours,
+                        required: true
+                    }
+                    ,
+                    {
+                        model: SubRequirements,
+                        required: true
+                    }
+                    ,
+                    {
+                        model: Plannings,
+                        required: true,
+                        include:
+                        {
+                            model: Groups,
+                            required: true,
+                            include:
+                            {
+                                model: Sections,
+                                required: true
+                            }
+                        }
+                    }
+                ]
+            })
+            exist = []
+
+            for (var i = 0; i < positions.length; i++) {
+                days[positions[i].day].push({
+                    startH: positions[i].startH,
+                    endH: positions[i].endH,
+                    startMin: positions[i].startMin,
+                    endMin: positions[i].endMin,
+                    target: positions[i].planning.group.name,
+                    requirement: positions[i].subrequirement.name,
+                    name: positions[i].tdp.name,
+                    prof: positions[i].user.firstname + " " + positions[i].user.lastname
+                })
+            }
+
+            for (var i = 0; i < positionscours.length; i++) {
+                if (!exist.includes(positionscours[i].courId + "-" + positionscours[i].planning.group.section.name)) {
                     days[positionscours[i].day].push({
-                        startH:positionscours[i].startH,
-                        endH:positionscours[i].endH,
-                        target : positionscours[i].planning.group.section.name,
-                        startMin:positionscours[i].startMin,
-                        endMin:positionscours[i].endMin,
-                        requirement:positionscours[i].subrequirement.name,
-                        name:positionscours[i].cour.name,
-                        prof:positionscours[i].user.firstname + " " +positionscours[i].user.lastname
-    
+                        startH: positionscours[i].startH,
+                        endH: positionscours[i].endH,
+                        target: positionscours[i].planning.group.section.name,
+                        startMin: positionscours[i].startMin,
+                        endMin: positionscours[i].endMin,
+                        requirement: positionscours[i].subrequirement.name,
+                        name: positionscours[i].cour.name,
+                        prof: positionscours[i].user.firstname + " " + positionscours[i].user.lastname
+
                     })
-                    exist.push(positionscours[i].courId+"-"+positionscours[i].planning.group.section.name)
-                    }
-                    else {
-                        console.log(exist)
-                        console.log("ID : " +positionscours[i].courId)
-                        console.log("Position : " +positionscours[i].cour.name)
-                        console.log("Time start : " +positionscours[i].startH + ":" +positionscours[i].startMin)
-                        console.log("Time end : " +positionscours[i].endH + ":" +positionscours[i].endMin)
-                        console.log("Salle : " +positionscours[i].subrequirement.name)
-                        console.log("day : " +positionscours[i].day)
-                        console.log("Prof : " +positionscours[i].user.firstname + " " +positionscours[i].user.lastname)
-                    }
-                    
+                    exist.push(positionscours[i].courId + "-" + positionscours[i].planning.group.section.name)
                 }
-                for (let i = 0; i < 7; i++)
-                    days[i].sort(compare)
-    
-                    for (let i = 0; i < 7; i++)    
-                    for (let j = 0; j < days[i].length; j++)
-    
+                else {
+                    console.log(exist)
+                    console.log("ID : " + positionscours[i].courId)
+                    console.log("Position : " + positionscours[i].cour.name)
+                    console.log("Time start : " + positionscours[i].startH + ":" + positionscours[i].startMin)
+                    console.log("Time end : " + positionscours[i].endH + ":" + positionscours[i].endMin)
+                    console.log("Salle : " + positionscours[i].subrequirement.name)
+                    console.log("day : " + positionscours[i].day)
+                    console.log("Prof : " + positionscours[i].user.firstname + " " + positionscours[i].user.lastname)
+                }
+
+            }
+            for (let i = 0; i < 7; i++)
+                days[i].sort(compare)
+
+            for (let i = 0; i < 7; i++)
+                for (let j = 0; j < days[i].length; j++)
+
                     console.log(days[i][j].name)
-                res.status(200).json({ days: days, name: "Planning générale" })
-    
-    
-    
-            }
-            catch (err) {
-                console.log(err)
-                res.status(400).json({ error: "Ops , server down" })
-            }
+            res.status(200).json({ days: days, name: "Planning générale" })
+
+
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
     },
-   
+
     makePlanning: async (req, res) => {
         try {
             const body = req.body;
@@ -782,10 +817,19 @@ var ControllerFunctions = {
                             include: [{
                                 model: Positions,
                                 required: false,
+                                include: {
+                                    model: TDP,
+                                    required: true
+                                }
+                                
                             },
                             {
                                 model: PositionsCours,
                                 required: false,
+                                include: {
+                                    model: Cours,
+                                    required: true
+                                }
                             }]
                         }
                     }]
@@ -794,7 +838,8 @@ var ControllerFunctions = {
                     where: { role: 1 },
                     include: [{
                         model: Positions,
-                        required: false,
+                        required: false
+
                     },
                     {
                         model: PositionsCours,
@@ -874,13 +919,13 @@ var ControllerFunctions = {
 
                             }
 
-                            setTimeout( async() => {
-                                  await Plannings.update(
-                                { statut: 1 },
-                                { where: { id: planning.id } }
-                            )
-                            },10000)
-                          
+                            setTimeout(async () => {
+                                await Plannings.update(
+                                    { statut: 1 },
+                                    { where: { id: planning.id } }
+                                )
+                            }, 10000)
+
 
                         }
 
@@ -1376,55 +1421,55 @@ var ControllerFunctions = {
             var modules = await Modules.findAll({ where: { semesterId: body.semester } })
             var dates = getDates(new Date(body.start), new Date(body.end))
             console.log(dates.length)
-            console.log(dates.length*2)
+            console.log(dates.length * 2)
             console.log(modules.length)
-            
-                dates.map(async (element) => {
+
+            dates.map(async (element) => {
 
 
-                    var day = moment(element).day();
+                var day = moment(element).day();
 
 
-                    if (day < 6) day++
-                    else
-                        day = 0
-                    var name_day = ""
-                    if (day == 0) name_day = "Samedi"
-                    if (day == 1) name_day = "Dimanche"
-                    if (day == 2) name_day = "Lundi"
-                    if (day == 3) name_day = "Mardi"
-                    if (day == 4) name_day = "Mercredi"
-                    if (day == 5) name_day = "Jeudi"
-                    if (day != 6) {
-                        if (day == 0) {
+                if (day < 6) day++
+                else
+                    day = 0
+                var name_day = ""
+                if (day == 0) name_day = "Samedi"
+                if (day == 1) name_day = "Dimanche"
+                if (day == 2) name_day = "Lundi"
+                if (day == 3) name_day = "Mardi"
+                if (day == 4) name_day = "Mercredi"
+                if (day == 5) name_day = "Jeudi"
+                if (day != 6) {
+                    if (day == 0) {
 
-                            if (body.samdi == 1) {
-                                days.push({
-                                    date: moment(element).format('YYYY-MM-DD'),
-                                    examens: [],
-                                    name: name_day
-                                })
-                            }
-                        }
-                        else {
-
+                        if (body.samdi == 1) {
                             days.push({
                                 date: moment(element).format('YYYY-MM-DD'),
                                 examens: [],
                                 name: name_day
                             })
-
-
                         }
                     }
+                    else {
+
+                        days.push({
+                            date: moment(element).format('YYYY-MM-DD'),
+                            examens: [],
+                            name: name_day
+                        })
 
 
-
-                })
-                if (days.length * 2 < modules.length) {
-                    return res.status(400).json({ error: "Les jours insufissants" })
+                    }
                 }
-                else {
+
+
+
+            })
+            if (days.length * 2 < modules.length) {
+                return res.status(400).json({ error: "Les jours insufissants" })
+            }
+            else {
                 for (let i = 0; i < modules.length; i++) {
                     var prof = ""
                     const cours = await Cours.findAll({
@@ -1475,101 +1520,92 @@ var ControllerFunctions = {
                 var counter = 0
                 for (let i = 0; i < modules.length; i++) {
                     counter = counter % days.length
-                    
-                        days[counter].examens.push(
-                            {
-                                module: modules[i],
-                                time: {
-                                    start: {
-                                        hour: 0,
-                                        min: 0
-                                    },
-                                    end: {
-                                        hour: 0,
-                                        min: 0
-                                    }
+
+                    days[counter].examens.push(
+                        {
+                            module: modules[i],
+                            time: {
+                                start: {
+                                    hour: 0,
+                                    min: 0
+                                },
+                                end: {
+                                    hour: 0,
+                                    min: 0
                                 }
                             }
-                        )
-                  
+                        }
+                    )
+
                     counter++
 
                 }
-  
-                for(let i = 0 ; i < days.length ;i++){
-                
 
-                    if(days[i].examens.length > 1 ) {
-                      
-                        if(days[i].examens[0].module.coefficient == 5 && i!=0)
-                        {
-                           
-                            for(let j = i+1 ; j < days.length ;j++ )
-                            {
-                               
-                                if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient <= 4)
-                                {
-                                 
+                for (let i = 0; i < days.length; i++) {
+
+
+                    if (days[i].examens.length > 1) {
+
+                        if (days[i].examens[0].module.coefficient == 5 && i != 0) {
+
+                            for (let j = i + 1; j < days.length; j++) {
+
+                                if (days[j].examens.length == 1 && days[j].examens[0].module.coefficient <= 4) {
+
                                     days[j].examens.push(days[i].examens[0]);
                                     days[i].examens.push(days[j].examens[0]);
 
                                     days[j].examens.shift();
-                                    if(days[i].examens[1].module.coefficient >= days[i].examens[2].module.coefficient)
-                                    days[i].examens.shift();
-                                    else{
+                                    if (days[i].examens[1].module.coefficient >= days[i].examens[2].module.coefficient)
+                                        days[i].examens.shift();
+                                    else {
                                         var swap = days[i].examens[1]
                                         days[i].examens[1] = days[i].examens[2]
                                         days[i].examens[2] = swap
                                         days[i].examens.shift();
 
                                     }
-                               
-                                    
 
-                                   
+
+
+
                                     break;
-    
-    
+
+
                                 }
                             }
-    
+
                         }
 
 
-                        else if( days[i].examens[0].module.coefficient == 5 )
-                        {
-                            for(let j = i+1 ; j < days.length ;j++ )
-                            {
-                               
-                                if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient != 5)
-                                {
-                                  
+                        else if (days[i].examens[0].module.coefficient == 5) {
+                            for (let j = i + 1; j < days.length; j++) {
+
+                                if (days[j].examens.length == 1 && days[j].examens[0].module.coefficient != 5) {
+
                                     days[j].examens.push(days[i].examens[1]);
                                     days[i].examens.pop();
                                     break;
-    
-    
+
+
                                 }
                             }
-    
+
 
                         }
-                        
+
                         continue
                     }
 
-                    if( days[i].examens.length == 1 && days[i].examens[0].module.coefficient == 5  )
-                    {
-                        for(let j = i+1 ; j < days.length ;j++ )
-                        {
-                           
-                            if(days[j].examens.length == 1 && days[j].examens[0].module.coefficient < 3)
-                            {
-                              
+                    if (days[i].examens.length == 1 && days[i].examens[0].module.coefficient == 5) {
+                        for (let j = i + 1; j < days.length; j++) {
+
+                            if (days[j].examens.length == 1 && days[j].examens[0].module.coefficient < 3) {
+
                                 var swap2 = days[i].examens[0]
                                 days[i].examens[0] = days[j].examens[0]
                                 days[j].examens[0] = swap2
-                             
+
                                 break;
 
 
@@ -1577,12 +1613,12 @@ var ControllerFunctions = {
                         }
 
                     }
-    
+
                 }
 
- 
+
                 for (let i = 0; i < days.length; i++) {
-                   
+
                     if (days[i].examens.length == 1) {
                         days[i].examens[0].time.start.hour = 10
                         days[i].examens[0].time.start.min = 0
