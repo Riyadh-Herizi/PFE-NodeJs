@@ -98,6 +98,10 @@ Semesters.belongsTo(Years)
 Semesters.hasMany(Modules)
 Modules.belongsTo(Semesters)
 
+Semesters.hasMany(ExamsPlannings)
+ExamsPlannings.belongsTo(Semesters)
+
+
 Cours.belongsTo(Requirements)
 Requirements.hasMany(Cours)
 
