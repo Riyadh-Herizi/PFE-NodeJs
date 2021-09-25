@@ -164,12 +164,10 @@ var ControllerFunctions = {
     getExamPlanning: async (req, res) => {
         try {
             const body = req.body;
-            if (!(body.id)) {
-                return res.status(450).send({ error: "Data not formatted properly" });
-            }
-            const positions = await ExamsPlannings.findOne({
+            console.log(body)
+            const positions = await ExamsPlannings.findAll({
                 where: { semesterId : body.semester , emd : body.emd },
-                include: [
+                include: 
 
                     {
                         model: ExamsPositions,
@@ -180,13 +178,13 @@ var ControllerFunctions = {
                         }
                     }
 
-                ]
+                
 
 
             }
             )
-            if (positions)
-            res.status(200).json(positions)
+            if (positions.length)
+            res.status(200).json(positions[0])
             else 
             res.status(400).json({})
            

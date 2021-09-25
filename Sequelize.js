@@ -58,15 +58,12 @@ Positions.belongsTo(Plannings)
 ExamsPlannings.hasMany(ExamsPositions)
 ExamsPositions.belongsTo(ExamsPlannings)
 
-
-
 Years.hasMany(ExamsPlannings)
 ExamsPlannings.belongsTo(Years)
 
 
 Modules.hasMany(ExamsPositions)
 ExamsPositions.belongsTo(Modules)
-
 
 Plannings.hasMany(PositionsCours)
 PositionsCours.belongsTo(Plannings)
@@ -100,7 +97,6 @@ Modules.belongsTo(Semesters)
 
 Semesters.hasMany(ExamsPlannings)
 ExamsPlannings.belongsTo(Semesters)
-
 
 Cours.belongsTo(Requirements)
 Requirements.hasMany(Cours)
