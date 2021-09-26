@@ -5,6 +5,10 @@ module.exports = (sequelize, type) => {
             type: type.INTEGER,
             primaryKey: true,
             autoIncrement: true
+        },    
+        type : {
+            type : type.INTEGER,
+            defaultValue: -1
         },        
         day : {
             type : type.INTEGER,

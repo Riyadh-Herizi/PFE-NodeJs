@@ -77,11 +77,11 @@ var ControllerFunctions = {
     addOccupation: async (req, res) => {
         try {
             const body = req.body;
-            const existOcc = await Occupations.findOne({ where: { userId : body.id ,day : body.day ,  startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin } })
+            const existOcc = await Occupations.findOne({ where: { userId : body.id ,type : body.type,day : body.day ,  startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin } })
             if (existOcc)
                    return res.status(400).send({ error: "cette occupation est déja existé" });
               
-                await Occupations.create({ userId : body.id ,day : body.day, startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin })
+                await Occupations.create({ userId : body.id ,type : body.type,day : body.day, startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin })
                 res.status(200).send({})
             
         }
