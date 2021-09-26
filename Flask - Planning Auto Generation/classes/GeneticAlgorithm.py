@@ -413,6 +413,7 @@ class GeneticAlgorithm:
         prof = element["prof"]["user"]
         current_charge = 0
         for position in prof["positions"] :
+          
             if "TD " in position["tdp"]["name"] :
                 current_charge = current_charge +(position["tdp"]["hour"] + position["tdp"]["min"] /60) * 0.66
             elif "TP " in position["tdp"]["name"]:
@@ -421,6 +422,7 @@ class GeneticAlgorithm:
         for position in prof["positionscours"] :
             if not position["courId"] in exist:
                 exist.append(position["courId"])
+                
                 current_charge = current_charge +(position["cour"]["hour"] + position["cour"]["min"] /60) 
             
 

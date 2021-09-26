@@ -1,8 +1,8 @@
-const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements, ExamsPlannings, ExamsPositions } = require("../Sequelize");
+const { Users, Years, Semesters, Plannings, PositionsCours, Positions, Modules, Cours, Requirements, TDP, ResponsablesTDP, Responsables, Sections, Groups, SubRequirements, ExamsPlannings, ExamsPositions, Occupations } = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const axios = require('axios')
 const { Op } = require("sequelize");
-const moment = require("moment")
+const moment = require("moment");
 var nodemailer = require('nodemailer');
 
 Date.prototype.addDays = function (days) {
@@ -36,6 +36,7 @@ function compare(a, b) {
     }
     return 0;
 }
+
 function compare_modules(a, b) {
     if (a.coefficient > b.coefficient) {
         return -1;
@@ -43,17 +44,12 @@ function compare_modules(a, b) {
     if (a.coefficient < b.coefficient) {
         return 1;
     }
-
-
     return 0;
 }
 
-
 var ControllerFunctions = {
-
     addProf: async (req, res) => {
         try {
-
             const body = req.body.user;
             if (!(body.username && body.password && body.type && body.firstname && body.lastname && body.email)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
@@ -65,7 +61,6 @@ var ControllerFunctions = {
                     res.status(400).send({ error: "Nom d'utilisateur déja existé" });
                 else
                     res.status(400).send({ error: "Email  déja existé" });
-
             }
             else {
                 const random = await bcrypt.genSalt(10);
@@ -79,9 +74,46 @@ var ControllerFunctions = {
             res.status(400).json({ error: "Ops , server down" })
         }
     },
+    addOccupation: async (req, res) => {
+        try {
+            const body = req.body;
+            const existOcc = await Occupations.findOne({ where: { userId : body.id ,day : body.day ,  startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin } })
+            if (existOcc)
+                   return res.status(400).send({ error: "cette occupation est déja existé" });
+              
+                await Occupations.create({ userId : body.id ,day : body.day, startH : body.startH , endH : body.endH ,startMin : body.startMin , endMin: body.endMin })
+                res.status(200).send({})
+            
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    deletOccupation: async (req, res) => {
+        try {
+            const body = req.body;
+            await Occupations.destroy({ where: { id: body.id } });
+            res.status(200).send()
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
+    getOccupations: async (req, res) => {
+        try {
+            const occupations = await Occupations.findAll({ where: { userId: req.body.id } })
+            res.status(200).json(occupations)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(400).json({ error: "Ops , server down" })
+        }
+    },
     updateProf: async (req, res) => {
         try {
-
             const body = req.body;
             if (!(body.username && body.type && body.firstname && body.lastname && body.email)) {
                 return res.status(450).send({ error: "Data not formatted properly" });
@@ -93,10 +125,8 @@ var ControllerFunctions = {
                     res.status(400).send({ error: "Nom d'utilisateur est occupé par un autre utilisateur" });
                 else
                     res.status(400).send({ error: "Email est occupé par un autre utilisateur" });
-
             }
             else {
-
                 await Users.update({ firstname: body.firstname, lastname: body.lastname, username: body.username, type: body.type, email: body.email },
                     { where: { id: body.id } })
 
@@ -798,7 +828,7 @@ var ControllerFunctions = {
                             include: [{
                                 model: Positions,
                                 required: false,
-                                include: {
+                                include: [{
                                     model: Plannings,
                                     required: true,
                                     where: {
@@ -808,11 +838,20 @@ var ControllerFunctions = {
                                     },
 
                                 },
+                                {
+                                    model : TDP,
+                                    required:true
+                                }
+                            
+                            
+                            
+                            
+                            ],
                             },
                             {
                                 model: PositionsCours,
                                 required: false,
-                                include: {
+                                include: [{
                                     model: Plannings,
                                     required: true,
                                     where: {
@@ -821,6 +860,13 @@ var ControllerFunctions = {
                                     },
 
                                 },
+                                {
+                                    model : Cours,
+                                    required:true
+                                }
+                            
+                            
+                            ],
                             }]
                         }
                     }, {
@@ -884,12 +930,20 @@ var ControllerFunctions = {
                     where: { role: 1 },
                     include: [{
                         model: Positions,
-                        required: false
+                        required: false ,
+                        include: {
+                            model: TDP,
+                            required: true
+                        }
 
                     },
                     {
                         model: PositionsCours,
                         required: false,
+                        include: {
+                            model: Cours,
+                            required: true
+                        }
                     }]
                 })
                 const requirements = await SubRequirements.findAll({
@@ -970,7 +1024,7 @@ var ControllerFunctions = {
                                     { statut: 1 },
                                     { where: { id: planning.id } }
                                 )
-                            }, 10000)
+                            }, 2000)
 
 
                         }

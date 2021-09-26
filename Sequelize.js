@@ -47,9 +47,12 @@ const PositionsCours = PositionsCoursModel(sequelize, Sequelize);
 
 const PositionsExamsModel = require('./Models/ExamsPosition');
 const ExamsPositions = PositionsExamsModel(sequelize, Sequelize);
+
 const ExamsPlanningsModel = require('./Models/ExamsPlanning');
 const ExamsPlannings = ExamsPlanningsModel(sequelize, Sequelize);
 
+const OccupationsModel = require('./Models/Occupations');
+const Occupations = OccupationsModel(sequelize, Sequelize);
 
 // DEFINING RELATIONS
 Plannings.hasMany(Positions)
@@ -131,6 +134,11 @@ PositionsCours.belongsTo(SubRequirements)
 
 SubRequirements.hasMany(Positions)
 Positions.belongsTo(SubRequirements)
+
+Users.hasMany(Occupations)
+Occupations.belongsTo(Users)
+
+
 
 Semesters.hasMany(Plannings)
 Plannings.belongsTo(Semesters)
@@ -365,4 +373,4 @@ sequelize.sync({ force: false })
     });
 
 
-module.exports = { Users, Years, Semesters, Modules, Cours, Requirements,ExamsPlannings ,ExamsPositions, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements, Plannings, Positions, PositionsCours }
+module.exports = { Users, Years, Semesters,Occupations, Modules, Cours, Requirements,ExamsPlannings ,ExamsPositions, Responsables, TDP, ResponsablesTDP, Sections, Groups, SubRequirements, Plannings, Positions, PositionsCours }

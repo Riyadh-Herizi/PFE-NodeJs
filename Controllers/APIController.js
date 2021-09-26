@@ -1,8 +1,8 @@
-const { Users ,Positions ,PositionsCours,TDP , SubRequirements , Groups , Cours , Sections ,Years, Plannings} = require("../Sequelize");
+const { Users ,Semesters, Positions ,PositionsCours,TDP , SubRequirements , Groups , Cours , Sections ,Years, Plannings} = require("../Sequelize");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');
-
+const { Op } = require("sequelize");
 
 function compare(a, b) {
     if (a.start < b.start) {
@@ -54,8 +54,18 @@ var ControllerFunctions = {
     },
     Positions: async (req, res) => {
         try {
+            const body = req.body
+            const semesters = await Semesters.findAll({ where: { name: { [Op.like]: '%'+body.semester+'%' } }, attributes: ['id'] })
+
+            var id_semesters = [];
+
+            semesters.map((element) => {
+                id_semesters.push(element.id)
+            })
+
+
             console.log(req.body)
-            console.log(req.user)
+            
             const date = moment(new Date()); 
             var day = date.day();
 
@@ -72,6 +82,7 @@ var ControllerFunctions = {
                     {
                                 model : Plannings,
                                 required : true ,
+                                where :{ id : { [Op.in]: id_semesters }},
                                 include : {
                                     model: Groups,
                                 required: true,
@@ -109,6 +120,7 @@ var ControllerFunctions = {
                             {
                                     model : Plannings,
                                     required : true ,
+                                    where :{ id : { [Op.in]: id_semesters }},
                                     include : {
                                         model: Groups,
                                     required: true,
@@ -219,7 +231,14 @@ var ControllerFunctions = {
     },
     PositionsDay: async (req, res) => {
         try {
-            
+            const body = req.body
+            const semesters = await Semesters.findAll({ where: { name: { [Op.like]: '%'+body.semester+'%' } }, attributes: ['id'] })
+
+            var id_semesters = [];
+
+            semesters.map((element) => {
+                id_semesters.push(element.id)
+            })
             console.log("/*/*/*/*/*//////////////////////")
             console.log(req.body)
             var day_ = req.body.day;
@@ -235,6 +254,7 @@ var ControllerFunctions = {
                     {
                                 model : Plannings,
                                 required : true ,
+                                where :{ id : { [Op.in]: id_semesters }},
                                 include : {
                                     model: Groups,
                                 required: true,
@@ -272,6 +292,7 @@ var ControllerFunctions = {
                             {
                                     model : Plannings,
                                     required : true ,
+                                    where :{ id : { [Op.in]: id_semesters }},
                                     include : {
                                         model: Groups,
                                     required: true,
@@ -373,6 +394,17 @@ var ControllerFunctions = {
 
             console.log(positions_app)
             res.status(200).json(positions_app)
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(404).json({ error: "Ops , server down" })
+        }
+    },
+    NotComming: async (req, res) => {
+        try {
+            const body = req.body
+           
 
         }
         catch (err) {

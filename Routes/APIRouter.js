@@ -31,4 +31,5 @@ function isloggedIn(req, res, next) {
 router.post('/login', APIController.login)
 router.post('/positions',isloggedIn, APIController.Positions)
 router.post('/positionsday',isloggedIn, APIController.PositionsDay)
+router.post('/notcomming',isloggedIn, APIController.NotComming)
 module.exports = router;

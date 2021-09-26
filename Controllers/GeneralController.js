@@ -178,9 +178,6 @@ var ControllerFunctions = {
                         }
                     }
 
-                
-
-
             }
             )
             if (positions.length)

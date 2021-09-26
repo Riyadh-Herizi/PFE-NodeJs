@@ -52,6 +52,13 @@ router.post('/mailexams', isAdmin , AdminController.mail_exams)
 ////////////////
 router.post('/getexamsplannings', isAdmin , AdminController.getExamsPlannings)
 router.post('/getexamplanning', isAdmin , AdminController.getExamPlanning)
+
+router.post('/deleteocc', isAdmin , AdminController.deletOccupation)
+router.post('/addocc', isAdmin , AdminController.addOccupation)
+router.post('/getocc', isAdmin , AdminController.getOccupations)
+
+
+
 router.post('/generalplanning', isAdmin , AdminController.getPlanningGeneral)
 router.post('/deleteprof', isAdmin , AdminController.deleteProf)
 router.post('/deletetdp', isAdmin , AdminController.deleteTDP)
